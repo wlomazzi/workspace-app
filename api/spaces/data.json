@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "user_id": 2,
+    "image": "/img_spaces/workplace.png",
+    "title": "Modern Open Space",
+    "price": 50,
+    "neighborhood": "Hawkwood",
+    "workspace_seats": 2,
+    "type": "open_space",
+    "lease_time": "day",
+    "amenities": {
+      "kitchen": true,
+      "parking": true,
+      "public_transport": true,
+      "wifi": false,
+      "printer": true
+    },
+    "available_from": "2025-03-01",
+    "rating": 4.2
+  },
+  {
+    "id": 2,
+    "user_id": 3,
+    "image": "/img_spaces/workplace.png",
+    "title": "Shared Desk",
+    "price": 40,
+    "neighborhood": "Beltline",
+    "workspace_seats": 4,
+    "type": "shared_desk",
+    "lease_time": "day",
+    "amenities": {
+      "kitchen": false,
+      "parking": true,
+      "public_transport": false,
+      "wifi": false,
+      "printer": false
+    },
+    "available_from": "2025-04-01",
+    "rating": 4.2
+  },
+  {
+    "id": 3,
+    "user_id": "2",
+    "image": "/img_spaces/workplace.png",
+    "title": "Fantastic Open Space",
+    "price": "300",
+    "neighborhood": "Arbour Lake NW",
+    "workspace_seats": "3",
+    "type": "private_office",
+    "lease_time": "day",
+    "amenities": {
+      "kitchen": false,
+      "parking": false,
+      "public_transport": false,
+      "wifi": false,
+      "printer": false
+    },
+    "available_from": "2025-03-18",
+    "rating": "5"
+  },
+  {
+    "id": 4,
+    "user_id": "2",
+    "image": "/img_spaces/workplace.png",
+    "title": "Beautifull Office",
+    "price": "100",
+    "neighborhood": "Arbour Lake NW",
+    "workspace_seats": "8",
+    "type": "private_office",
+    "lease_time": "week",
+    "amenities": {
+      "kitchen": false,
+      "parking": false,
+      "public_transport": false,
+      "wifi": false,
+      "printer": false
+    },
+    "available_from": "2025-03-18",
+    "rating": "5"
+  }
+]

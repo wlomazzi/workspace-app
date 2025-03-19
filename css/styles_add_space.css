@@ -1,0 +1,103 @@
+/* Reset  */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Form for insert Spacing */
+#spaceForm {
+    background: white;
+    padding: 20px;
+    max-width: 80%;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Title */
+#spaceForm h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* Labels */
+#spaceForm label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+/* Input Fields */
+#spaceForm input,
+#spaceForm select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+/* Image upload field */
+#spaceForm input[type="file"] {
+    border: none;
+}
+
+
+/* Field adjust for amenities 
+#spaceForm fieldset {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column; 
+    gap: 10px;
+    align-items: flex-start;
+}
+
+
+#spaceForm fieldset label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: normal;
+}
+*/
+
+
+/* Confirmation button */
+#spaceForm button {
+    width: 100%;
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.3s;
+}
+
+#spaceForm button:hover {
+    background: #0056b3;
+}
+
+/* Responsivity 
+@media (max-width: 480px) {
+    #spaceForm {
+        max-width: 90%;
+    }
+}
+
+*/
