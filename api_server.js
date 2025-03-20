@@ -7,15 +7,15 @@ const PORT = 3000;
 app.use(express.json());
 app.use(cors());
 
-// 🔹 Importando APIs corretamente
+// Importing the APIs
 const usersRoutes = require("./api/users/user_register");
 const spacesRoutes = require("./api/spaces/spaces");
 
-// 🔹 Registrando APIs com prefixos diferentes
+// Registering the APIs with different routes
 app.use("/api/users", usersRoutes);
 app.use("/api/spaces", spacesRoutes);
 
-// 🔹 Iniciando servidor
+// Starting the server
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    console.log(`🚀 Server running in http://localhost:${PORT}`);
 });

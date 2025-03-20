@@ -1,7 +1,7 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const multer = require("multer"); // 🔹 Adicione esta linha para importar o multer
+const multer = require("multer"); // Importing the multer library
 
 
 const router = express.Router();

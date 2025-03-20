@@ -8,7 +8,7 @@ function toggleMenu() {
     }
 }
 
-// Top menu: Close the menu when clicking outside of it
+// Top menu: Close the menu when clicking outside of it (close sandwich icon menu)
 document.addEventListener("click", function(event) {
     const menu = document.getElementById("menu");
     const menuIcon = document.querySelector(".menu-icon");
@@ -19,14 +19,14 @@ document.addEventListener("click", function(event) {
 });
 
 
-// 🔹 Alteração no evento submit do formulário de login
+// Submiting the login form
 document.getElementById("loginForm").addEventListener("submit", async function(event) {
     event.preventDefault();
 
     const user_id = document.getElementById("user_id").value;
     const user_password = document.getElementById("user_password").value;
 
-    const response = await fetch("http://localhost:3000/api/users/login", {  // Alterado para /login
+    const response = await fetch("http://localhost:3000/api/users/login", {  // Changind the URL to the login API
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -38,8 +38,8 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
 
     if (result.success) {
         alert("Login Successfull!");
-        window.location.replace("index.html");  // Redirecionamento para a página principal
+        window.location.replace("index.html");  // Redirect to default page
     } else {
-        alert(result.message);  // Exibe erro de usuário/senha
+        alert(result.message);  // Show the error message
     }
 });

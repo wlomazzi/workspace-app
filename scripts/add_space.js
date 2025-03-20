@@ -1,11 +1,10 @@
 document.getElementById("spaceForm").addEventListener("submit", async function(event) {
     event.preventDefault();
 
-    const formData = new FormData(this); // Criar FormData para enviar arquivos e texto
-
+    const formData = new FormData(this); // Create FormData for sendn files and text data
     const response = await fetch("http://localhost:3000/api/spaces", {
         method: "POST",
-        body: formData  // Enviando dados como `multipart/form-data`
+        body: formData  // Sending data as `multipart/form-data`
     });
 
     const result = await response.json();
