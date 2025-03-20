@@ -37,7 +37,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     //alert(result.message);
 
     if (result.success) {
-        window.location.replace("login.html");  // Redirecionamento forçado
+        window.location.replace("login.html");  // Forcing the browser to navigate to the login page
     }else {
         alert(result.message);
     }
