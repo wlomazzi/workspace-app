@@ -1,0 +1,120 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Main container */
+.profile-update-container {
+    width: 80%;
+    max-width: 80%;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* User info section */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 20px;
+}
+
+
+/* Profile Picture Styling */
+.profile-pic {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    cursor: pointer; /* Indicates it's clickable */
+}
+
+/* You can add additional styles for hover effect on the image */
+.profile-pic:hover {
+    opacity: 0.7;
+}
+
+
+.user-details {
+    flex-grow: 1;
+}
+
+/* Labels and Inputs */
+.user-details label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+.user-details input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Update Button */
+.update-btn {
+    width: 100%;
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.3s;
+}
+
+.update-btn:hover {
+    background: #0056b3;
+}
+
+/* Hover effect on inputs and button */
+.user-details input:hover {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+}
+
+/* Active state for update button */
+.update-btn:active {
+    background-color: #0056b3;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .profile-update-container {
+        width: 90%;
+        padding: 15px;
+    }
+
+    .user-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-pic {
+        margin-bottom: 15px;
+    }
+
+    .user-details label {
+        font-size: 16px;
+    }
+
+    .user-details input {
+        font-size: 16px;
+    }
+}

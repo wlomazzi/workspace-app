@@ -1,0 +1,208 @@
+/* Reset  */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+
+/* Form container for adding a space -------------------------------------- */
+#spaceForm {
+    background: white;
+    padding: 20px;
+    max-width: 50%;        /* Sets a smaller maximum width for the form */
+    width: 50%;            /* Allows the form to be responsive */
+    border-radius: 10px;
+    align-self: center;    /* Centers the form vertically in flex containers */
+    margin-left: 20%;      /* Adds space on the left side of the form */
+    margin-top: 10px;      /* Adds space at the top of the form */
+    box-shadow: 0px 4px 6px #0000001a; /* Subtle shadow for depth */
+}
+
+
+
+/* Title */
+#spaceForm h2 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+/* Labels */
+#spaceForm label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+/* Style for: inputs e selects */
+#spaceForm input,
+#spaceForm select,
+#spaceForm textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+/* Textarea specific style */
+#spaceForm textarea {
+    resize: vertical;         /* Permite ajustar só na altura */
+    min-height: 100px;        /* Altura inicial */
+    max-height: 300px;        /* Limita a altura */
+}
+
+/* Image upload field */
+#spaceForm input[type="file"] {
+    border: none;
+}
+
+
+/* Adjusting the fieldset for better spacing */
+fieldset {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 5px;
+}
+
+/* Checkboxes container */
+.amenities-container {
+    display: flex;
+    flex-direction:row;
+    gap: 10px;
+}
+
+/* Adjust to align checkboxes with text */
+.amenities-container label {
+    display: flex;
+    align-items: center; /* Centers vertically */
+    gap: 10px; /* Space between checkbox and text */
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Adjusting the size and position of the checkbox */
+.amenities-container input[type="checkbox"] {
+    appearance: none; /* Remove default browser style */
+    width: 18px;
+    height: 18px;
+    border: 2px solid #007bff;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Styles the checkbox when checked */
+.amenities-container input[type="checkbox"]:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+    position: relative;
+}
+
+/* Add a chack (✔️) in checkbox */
+.amenities-container input[type="checkbox"]:checked::after {
+    content: "✔";
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+/* Button Confirmation [ record the space data ] */
+#spaceForm button {
+    width: 100%;
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.3s;
+}
+
+#spaceForm button:hover {
+    background: #0056b3;
+}
+
+
+
+
+/* Modal backdrop */
+#addressModal {
+    display: none; /* Showing danmically  */
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #00000080; 
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal content */
+#addressModalContent {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px #00000033;
+    font-family: sans-serif;
+}
+
+
+/* Address list */
+#addressList label {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 0px;
+    cursor: pointer;
+}
+
+/* Confirm Button */
+#addressList .modal-button {
+    background: #ff385c;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+
+#addressList button:hover {
+    background: #d9304f;
+}
+
+#addressList .modal-cancel {
+    background: #ccc;
+    color: #333;
+}
+
+#addressList .modal-cancel:hover {
+    background: #aaa;
+}
+
+#addressList .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Details</title>
+    <link rel="stylesheet" href= "/components/navbar.css">
+    <link rel="stylesheet" href= "/components/footer.css">
+    <link rel="stylesheet" href= "/css/styles_space_details.css">
+    <script defer src="/components/navbar.js"></script>
+    <script defer src="/components/footer.js"></script>
+    <!-- Seu script personalizado -->
+    <script src="/scripts/calendar.js"></script>    
+
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Google Maps (Api: get the location by the latitude and logitude)-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="space-content">
+
+            <div class="image-gallery">
+                <!-- Imagem principal -->
+                <img id="space-image" src="" alt="Space Image">
+                <!-- Miniaturas -->
+                <div class="thumbnail-container" id="thumbnail-container"></div>
+            </div>
+            
+            <div class="info">
+                <h2 id="space-title"></h2>
+                <p class="details" id="space-details"></p>
+    
+                <p><strong>Price:</strong> <strong><span id="space-price"></span> / <span id="space-lease"></strong></span></p>
+                <p><strong>Neighborhood:</strong> <span id="space-neighborhood"></span></p>
+                <p><strong>Seats Available:</strong> <span id="space-seats"></span></p>
+                <p><strong>Type:</strong> <span id="space-type"></span></p><br>
+                <!--<p><strong>Available From:</strong> <span id="space-available"></span></p>-->
+                <p><span id="space-amenities"></span></p><br>
+                <p></span><span id="space-rating"></span></p>
+            </div>
+
+        </div>
+        <div class="map-container">
+            <div id="map" >
+        </div>
+
+        <div class="form_dates">
+            <h3>Book space</h3>
+            <br>
+            <form id="form-space">
+                <label for="date-range">Select Dates:</label><br><br>
+                <input type="text" id="date-range" class="calendar-input">
+                <div id="message"></div>
+                <br><br><br>
+                <!-- Botão de confirmação -->
+                <button type="submit" class="confirm-btn">Confirm Booking</button>
+            </form>
+        </div>
+        
+    </div>
+    <script src="/scripts/space_details.js"></script>
+</body>
+</html>

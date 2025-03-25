@@ -1,0 +1,194 @@
+/* Principal container */
+
+.container {
+    display: flex;
+    flex-direction: column; /* empilha .main-content e .map-container */
+    padding: 50px;
+    position: relative; /* para que .form_dates fique posicionado corretamente */
+  }
+
+
+/* Space details configuration - Size of the box in relation to the container */
+.space-content {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start; /* ← ESSENCIAL: alinha os filhos ao topo */
+    text-align: left;
+}
+
+
+
+.space-content .details {
+    margin-bottom: 12px; /* Espaço abaixo do título */
+}
+
+
+.space-content p strong {
+    /*display: inline-block;*/
+    width: 160px; /* Define um tamanho fixo para os títulos Distência entre os textos */
+}
+
+
+/* Estilização da galeria de imagens */
+.image-gallery {
+    display: flex;
+    flex-direction: row; /* ← isso empilha imagem + miniaturas */
+    align-items: top;
+    gap: 15px;
+}
+
+/* Imagem principal */
+/* Estilização da imagem principal */
+#space-image {
+    width: 100%; /* Responsivo */
+    max-width: 300px; /* Largura máxima */
+    max-height: 300px; /* Altura máxima */
+    aspect-ratio: 1/1; /* Mantém um formato quadrado */
+    object-fit: cover; /* Garante que a imagem preencha o quadrado sem distorção */
+    border-radius: 8px; /* Cantos arredondados */
+    transition: 0.3s ease-in-out;
+}
+
+/* Responsividade: Ajusta para telas menores */
+@media (max-width: 500px) {
+    #space-image {
+        max-width: 300px; /* Diminui o tamanho em telas pequenas */
+        max-height: 300px;
+    }
+}
+
+/* Miniaturas */
+.thumbnail-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.thumbnail:hover {
+    transform: scale(1.1);
+}
+
+
+
+/* Ícones das amenities */
+.icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+}
+
+
+.map-container {
+    width: 100%;
+    margin-top: 40px;
+  }
+  
+#map {
+    width: 100%;
+    height: 400px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+}
+
+
+
+
+/* Estilização do Book Space */
+.form_dates {
+    position: absolute; /* Fixa em um ponto da tela, acima dos outros elementos */
+    top: 50px; /* Distância do topo */
+    right: 50px; /* Distância da direita */
+    background: #ffffffe8;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px #00000033; /* Sombreamento */
+    z-index: 1000; /* Garante que fique acima dos outros elementos */
+    width: 30%; /* Responsivo */
+}
+
+
+/* Input Flatpickr [ Calendar ] */
+.calendar-input {
+    width: 80%;
+    height: 30px;
+    line-height: 2.3; /* Ajusta o espaçamento entre as linhas dentro do parágrafo */    
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Define the style for occupied dates */
+.occupied {
+    background-color: #ff4d4d !important; /* Cor vermelha para as datas ocupadas */
+    color: white;
+    border-radius: 50%;
+    cursor: not-allowed; /* Impede a interação com as datas */
+}
+
+.flatpickr-day.disabled {
+    background-color: #ccc !important; /* Cor de fundo para as datas desabilitadas */
+    cursor: not-allowed; /* Impede a interação */
+}
+
+
+
+/* Estilização do botão de confirmação */
+.confirm-btn {
+    width: 100%;
+    background: #ff385c; /* Cor vermelha estilo Airbnb */
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.confirm-btn:hover {
+    background: #d02d4e; /* Cor mais escura ao passar o mouse */
+}
+
+
+/* Price message updated - executed after select the dates */
+#message {
+    margin-top: 50px;
+    font-size: 2.8vh; /* 3% of the viewport height */
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .space-content {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  
+    .image-gallery {
+      margin-bottom: 20px;
+    }
+  
+    .info {
+      width: 100%;
+      max-width: 600px;
+    }
+  
+    .form_dates {
+      position: static;
+      width: 90%;
+      margin: 30px auto;
+    }
+  }
+  

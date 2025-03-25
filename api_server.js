@@ -1,21 +1,25 @@
 const express = require("express");
+const app = express();
+const path = require("path");
 const cors = require("cors");
 
-const app = express();
 const PORT = 3000;
 
-app.use(express.json());
-app.use(cors());
+// Middleware
+app.use(express.json()); // Allows JSON body parsing
+app.use(cors());         // Enables CORS for all requests
 
-// Importing the APIs
-const usersRoutes = require("./api/users/user_register");
+// Importing API route handlers
+const usersRoutes = require("./api/users/users");
 const spacesRoutes = require("./api/spaces/spaces");
+const spacesRentedRoutes = require("./api/spaces/spaces_rented"); // ✅ NEW route added here
 
-// Registering the APIs with different routes
+// Registering API endpoints
 app.use("/api/users", usersRoutes);
 app.use("/api/spaces", spacesRoutes);
+app.use("/api/spaces_rented", spacesRentedRoutes); // ✅ New route registration
 
-// Starting the server
+// Start the server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running in http://localhost:${PORT}`);
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

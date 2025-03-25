@@ -1,0 +1,104 @@
+/* General styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-container {
+    width: 80%;
+    max-width: 80%;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+/* User info section */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 20px;
+}
+
+.profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-details {
+    flex-grow:1;
+    margin-bottom: 10px;
+}
+
+.edit-btn, 
+.add-new-btn{
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.edit-btn:hover,
+.add-new-btn:hover {
+    background-color: #0056b3;
+}
+
+
+/* Spaces section --------------------------------------------------------------------------------------------------------*/
+.spaces-section {
+    margin-top: 20px;
+}
+
+.spaces-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* distance between boxes */
+}
+
+.space-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    width: 280px;
+    box-shadow: 0px 4px 6px #0000001a;
+    cursor: pointer;
+}
+
+/* Amination when mouse hover in these objects */
+.space-card {
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.space-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 6px 12px #00000026;
+}
+
+
+.space-card img {
+    width: 30%;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.space-card h4 {
+    margin: 10px 0 5px;
+}
+
+.space-card p {
+    font-size: 14px;
+    color: #666;
+}

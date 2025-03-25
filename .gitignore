@@ -1,0 +1,37 @@
+# Node.js
+/node_modules
+/npm-debug.log
+/yarn-debug.log
+/yarn-error.log
+
+# Logs
+*.log
+
+# Diretórios de dependências e arquivos de lock
+package-lock.json
+yarn.lock
+
+# IDEs
+.vscode/
+.idea/
+
+# Sistema de arquivos do OS
+.DS_Store
+Thumbs.db
+
+# Arquivos temporários
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# Pastas de builds
+/dist
+/build
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.development
+.env.test
+.env.production

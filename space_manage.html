@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add a New Space</title>
+    <link rel="stylesheet" href= "/components/navbar.css">
+    <link rel="stylesheet" href= "/components/footer.css">
+    <link rel="stylesheet" href= "/css/styles_space_manage.css">
+    <script defer src="/components/navbar.js"></script>
+    <script defer src="/components/footer.js"></script>
+</head>
+
+<body>
+    <header>
+    </header>
+    
+    <main>
+        <section class="search"></section>
+        <section class="itens-list">
+            <div class="spaces">
+            </div>
+        </section>
+    </main>
+
+    <form id="spaceForm" enctype="multipart/form-data">
+        <h2>Add new space for work</h2>
+        <!--
+        <label for="user_id">User ID:</label>
+        <input type="number" id="user_id" name="user_id" required>
+        -->
+
+        <label for="images">Images (max 4):</label>
+        <input type="file" id="images" name="images" accept="image/*" multiple required>
+        <small>Hold Ctrl (or Cmd) to select multiple images.</small>
+        
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required maxlength="20">
+
+        <label for="details">Details:</label>
+        <textarea id="details" name="details" required maxlength="250" ></textarea>
+
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" required>
+
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" required maxlength="100" onblur="fetchCoordinatesFromAddress()">
+
+        <label for="neighborhood">Neighborhood:</label>
+        <input type="text" id="neighborhood" name="neighborhood" required maxlength="40">
+
+        <label for="workspace_seats">Seats:</label>
+        <input type="number" id="workspace_seats" name="workspace_seats" required>
+
+        <label for="type">Type:</label>
+        <select id="type" name="type">
+            <option value="open_space">Open Space</option>
+            <option value="private_office">Private Office</option>
+        </select>
+
+        <label for="lease_time">Lease time:</label>
+        <select id="lease_time" name="lease_time">
+            <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+        </select>
+        <fieldset>
+            <legend>Amenities</legend>
+            <div class="amenities-container">
+                <label><input type="checkbox" id="kitchen" name="kitchen" value="true"> Kitchen</label>
+                <label><input type="checkbox" id="parking" name="parking" value="true"> Parking</label>
+                <label><input type="checkbox" id="public_transport" name="public_transport" value="true"> Public Transport</label>
+                <label><input type="checkbox" id="wifi" name="wifi" value="true"> Wi-Fi</label>
+                <label><input type="checkbox" id="printer" name="printer" value="true"> Printer</label>
+                <label><input type="checkbox" id="air_conditioning" name="air_conditioning" value="true"> Air Conditioning</label>
+            </div>
+        </fieldset>
+        
+
+        <label for="available_from">Available Before:</label>
+        <input type="date" id="available_from" name="available_from" required>
+
+        <button type="submit">Insert Space</button>
+    </form>
+
+    <script defer src="/scripts/space_manage.js"></script>
+
+    <footer>
+    </footer>
+
+    <div id="addressModal">
+        <div id="addressModalContent">
+            <h3>Select the correct address:</h3>
+            <ul id="addressList" style="list-style: none; padding-left: 0;"></ul>
+        </div>
+    </div>    
+
+
+</body>
+</html>

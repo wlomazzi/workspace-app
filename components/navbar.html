@@ -1,0 +1,32 @@
+<html>
+    <body>
+        <head>
+            <div class="navbar">
+                <div class="logo-container">
+                    <a href="index.html">
+                        <img src="/images/logo.png" alt="Logo" class="logo">
+                    </a>
+                </div>
+                <div class="navbar-right">
+                    <div class="home-icon" onclick="menuHomeRedirect()">&#8962;</div>
+                    <!--<div class="user-icon" onclick="toggleMenu()">&#128100;</div>-->
+                    <div class="user-session-info" onclick="toggleMenu()">
+                        <!-- Wrap the image and name inside a flex container -->
+                        <div class="user-session-details">
+                            <h5 id="user-session-name"></h5>
+                            <img class="user-session-profile-pic" alt="User Profile">
+                        </div>
+                    </div>
+                    <!--<div class="menu-icon" onclick="toggleMenu()">&#9776;</div>-->
+                </div>                
+                <div class="dropdown-menu" id="menu">
+                    <a href="login.html">Log in</a>
+                    <a href="login_new.html">Sign up</a>
+                    <a href="user_profile.html">Profile</a>
+                    <a href="#" onclick="logout()">Logout</a>
+                </div>
+            </div>
+        </head>
+        <script src="/scripts/navbar.js"></script>  <!-- Coloque o script depois do conteúdo HTML -->
+    </body>
+</html>

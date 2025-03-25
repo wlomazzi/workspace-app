@@ -1,0 +1,194 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+
+/* Search bar container - fields: Neighborhood, Check-in, Check-out, Team Size and Search button */
+.search-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Centraliza os itens horizontalmente */
+    align-items: center;
+    background: #fff;
+    padding: 15px;
+    gap: 15px;
+    border-radius: 50px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    /*max-width: 85%; /* Define uma largura máxima */
+    width: 75%;
+    margin: 20px auto; /* Centraliza horizontalmente e adiciona espaço acima */
+}
+
+
+.search-bar input[type="date"],
+.search-bar select {
+    width: 110px;
+}
+
+
+/* Search bar container - fields: Neighborhood, Check-in, Check-out, Team Size and Search button and left icons (filter, public transport and kitchen)  */
+.icon-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    background: #979090;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px #0000001a;
+    margin: 20px auto;
+    max-width: 100%;
+    width: 80%;
+    height: 10%;
+}
+
+.icon-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.icon-box {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    box-shadow: 0px 4px 6px #00000033;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* When the mouse hover the icons - make an animation for the icons */
+.icon-box  {
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.icon-box:hover  {
+    transform: scale(1.35);
+    box-shadow: 0px 6px 12px #00000026;
+}
+
+.feature-icon {
+    width: 15px;
+    height: 15px;
+}
+
+.search-bar label {
+    font-weight: bold;
+}
+
+.search-bar input,
+.search-bar select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    
+}
+
+.search-bar button {
+    padding: 10px;
+    background: #ff5a5f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.search-bar button:hover {
+    background: #e0484e;
+}
+/* END Search bar container - fields: Neighborhood, Check-in, Check-out, Team Size and Search button and left icons (filter, public transport and kitchen)  */
+
+
+/* Body section configuration ---------------------------------------------------------------------------- */
+#filter-form {
+    position: absolute;
+    top: 240px;
+    width: 100%; /* Para ocupar toda a largura do container */
+    max-width: 320px; /* Para limitar a largura */
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 4px 8px #00000033;
+    border-radius: 12px;
+    font-size: 14px;
+    display: none; /* Inicialmente oculto */
+}
+
+
+/* Amination when mouse hover in these objects */
+.itens-list .space,
+.search-bar {
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.itens-list .space:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 6px 12px #00000026;
+}
+
+.itens-list {
+    /*text-align: left;*/
+    padding: 5px;
+}
+
+.spaces {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: left;
+    gap: 10px;
+}
+
+
+/* Space card seleccted on the default screen */
+.space {
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    text-align: left;
+    cursor: pointer;
+}
+
+  
+/* Configuration for the image in the box item  */
+.space img {
+    width: 230px; /* Define image width */
+    height: 230px; /* Define image height */
+    border-radius: 10px;
+}
+
+
+/* Configuration for line in the box item ( line before icons )  */
+hr {
+    border: none; /* Remove default border */
+    height: 1px; /* Define line height */
+    background-color: #ddd; /* Line color */
+    margin: 10px 0; /* Margin top */
+    width: 100%; /* Make the line fill all the box */
+}
+
+/* Configuration for icons in the box item  */
+.icon {
+    width: 24px !important; /* Redefine icon width */
+    height: auto !important; /* Mantain the icon proportion */
+    max-width: 100% !important; /* Prevent it from getting bigger than necessary */
+}
+/* END Body section configuration ---------------------------------------------------------------------------- */
+
+
+

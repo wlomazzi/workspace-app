@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coworking Spaces</title>
+    <link rel="stylesheet" href= "/css/styles_user_profile.css">
+    <link rel="stylesheet" href= "/components/navbar.css" >
+    <link rel="stylesheet" href= "/components/footer.css" >
+    
+    <script defer src="/components/navbar.js"></script>
+    <script defer src="/components/footer.js"></script>
+</head>
+<body>
+    <body>
+        <div class="profile-container">
+            
+            <!-- User Information Section -->
+            <div class="user-info">
+                <img  class="profile-pic">
+                <div class="user-details">
+                    <h2 id="user-name"></h2>
+                    <p id="user-email"></p>
+                    <p id="user-location"></p>
+                    <button class="edit-btn" onclick="window.location.href='user_profile_update.html';">Edit Profile</button>
+
+                </div>
+            </div>
+            
+            <!-- Owned Spaces Section -->
+            <div class="spaces-section">
+                <h3>Work4Fun - your spaces available</h3>
+                <button class="add-new-btn">Add new space</button><br><br>
+                <div id="owned-spaces" class="spaces-list"></div>
+            </div>
+
+            <hr style="border: 1px solid #ccc; margin: 20px 0;">
+            <!-- Rented Spaces Section -->
+            <div class="spaces-section">
+                <h3>Work4Fun - spaces rented by you</h3><br>
+                <div id="rented-spaces" class="spaces-list"></div>
+            </div>
+        </div>
+        
+        <script src="/scripts/user_profile.js"></script>
+    </body>
+</body>
+</html>

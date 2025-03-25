@@ -1,0 +1,32 @@
+[
+  {
+    "user_id": "1",
+    "user_login": "wlomazzi@gmail.com",
+    "user_password": "123",
+    "firstName": "Wesley",
+    "lastName": "Lomazzi e Souza",
+    "email": "wlomazzi@gmail.com",
+    "location": "Calgary, Canada",
+    "profilePic": "/public/img_profile/user_1.png"
+  },
+  {
+    "user_id": "2",
+    "user_login": "wlomazzi",
+    "user_password": "123",
+    "firstName": "Wesley",
+    "lastName": "Lomazzi",
+    "email": "wlomazzi@gmail.com",
+    "location": "Calgary, Canada",
+    "profilePic": "/public/img_profile/user_2.jpg"
+  },
+  {
+    "user_id": "3",
+    "user_login": "test",
+    "user_password": "test",
+    "firstName": "Test",
+    "lastName": "Test test",
+    "email": "wlomazzi@gmail.com",
+    "location": "Calgary, Canada",
+    "profilePic": "/public/img_profile/user_3.png"
+  }
+]

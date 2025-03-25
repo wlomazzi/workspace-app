@@ -1,0 +1,97 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Navbar - top item  */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    padding: 5px 5px;
+    box-shadow: 0px 4px 6px #0000001a;
+}
+
+
+/* Set the configuration for the logo image */
+.logo {
+    width: 90px;
+    height: 40px;
+}
+
+
+/* Set the icons configuration POSITION */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.home-icon {
+    font-size: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+
+/* Ensure user info is aligned horizontally */
+.user-session-info {
+    display: flex;
+    align-items: center;  /* Vertically align the items */
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/* Style for the profile picture */
+.user-session-profile-pic {
+    width: 40px;  /* Set the desired size of the profile picture */
+    height: 40px; /* Ensure it is a square */
+    border-radius: 50%;  /* Make the profile picture circular */
+    object-fit: cover;  /* Maintain aspect ratio */
+}
+
+/* Style for user details (username and image container) */
+.user-session-details {
+    display: flex;
+    gap: 10px;  /* Space between the image and the username */
+    align-items: center; /* Ensure the image and name are vertically aligned */
+}
+
+/* Style for the username */
+.user-session-details h5 {
+    margin: 0;  /* Remove default margin */
+    font-size: 14px;  /* Set the font size for the username */
+    color: #5c5b5b;  /* Set the color of the text */
+}
+
+
+
+/* Dropdown menu - activated when the user clik on the [ User icon ] */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50px;
+    z-index: 9999; /* valor bem alto para garantir que fique sobreposto */
+    background: white;
+    box-shadow: 0px 4px 6px #0000001a;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration:wavy;
+    color: #333;
+    transition: background 0.5s;
+}
+
+.dropdown-menu a:hover {
+    background: #f1f1f1;
+}

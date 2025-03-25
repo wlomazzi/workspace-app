@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User Profile</title>
+    <link rel="stylesheet" href="/css/styles_user_profile_update.css">
+    <link rel="stylesheet" href="/components/navbar.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <script defer src="/components/navbar.js"></script>
+    <script defer src="/components/footer.js"></script>
+</head>
+<body>
+    <div class="profile-update-container">
+        <!-- User Information Section -->
+        <div class="user-info">
+            <img src="/images/user_default.png" alt="Profile Picture" class="profile-pic" id="profile-pic">
+            <input type="file" id="fileInput" style="display: none;" />
+
+            <div class="user-details">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="user-firstName" name="firstName">
+                
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="user-lastName" name="lastName">
+                
+                <label for="email">Email:</label>
+                <input type="email" id="user-email" name="email">
+                
+                <label for="location">Location:</label>
+                <input type="text" id="user-location" name="location">
+                
+                <button class="update-btn" id="updateProfile">Update Profile</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/scripts/user_profile_update.js"></script>
+</body>
+</html>

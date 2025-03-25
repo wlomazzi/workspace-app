@@ -4,26 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coworking Spaces</title>
-    <link rel="stylesheet" href= "/css/styles.css" >
-    <script defer src="/scripts/login_register.js"></script>
+    <link rel="stylesheet" href= "/components/navbar.css">
+    <link rel="stylesheet" href= "/css/styles_login.css" >
+    <script defer src="/components/navbar.js"></script>
+    <script defer src="/scripts/login_new_user.js"></script>
 </head>
 <body>
     <header>
-        <div class="navbar">
-            <div class="logo-container">
-                <img src="/images/pin_logo.png" alt="Logo" class="logo">
-                <img src="/images/logo_name.png" alt="Logo Name" class="logo_name">
-            </div>
-            <div class="navbar-right">
-                <div class="menu-icon" onclick="toggleMenu()">&#9776;</div>
-                <div class="user-icon" onclick="toggleMenu()">👤</div>
-            </div>
-        </div>
-        <div class="dropdown-menu" id="menu">
-            <a href="login.html">Log in</a>
-            <a href="login_new.html">Sign up</a>
-            <a href="profile.html">Profile</a>
-        </div>
     </header>
     
     <main>
@@ -37,7 +24,7 @@
     <form id="registerForm">
         <h2>Create an Account</h2>
         <label for="user_id">Username:</label>
-        <input type="text" id="user_id" name="user_id" required>
+        <input type="text" id="user_login" name="user_login" required>
 
         <label for="user_password">Password:</label>
         <input type="password" id="user_password" name="user_password" required>
@@ -46,7 +33,6 @@
     </form>
 
     <footer>
-        <p>&copy; 2025 Work4Fun. All rights reserved.</p>
     </footer>
 </body>
 </html>
