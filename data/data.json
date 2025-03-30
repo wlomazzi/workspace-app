@@ -57,5 +57,34 @@
     ],
     "latitude": "51.12954056117403",
     "longitude": "-114.2120073046352"
+  },
+  {
+    "id": 3,
+    "user_id": "2",
+    "title": "test",
+    "details": "tes",
+    "price": "200",
+    "address": "Beltline, Calgary, Alberta, Canada",
+    "neighborhood": "Calgary",
+    "workspace_seats": "3",
+    "type": "open_space",
+    "lease_time": "day",
+    "amenities": {
+      "kitchen": true,
+      "parking": true,
+      "public_transport": true,
+      "wifi": true,
+      "printer": true,
+      "air_conditioning": true
+    },
+    "available_from": "2025-03-26",
+    "rating": 0,
+    "image": "/public/img_spaces/space_m8q0iio4wkp1ed.jpg",
+    "images": [
+      "/public/img_spaces/space_m8q0iio4wkp1ed.jpg",
+      "/public/img_spaces/space_m8q0iiouf0pxmh.jpg"
+    ],
+    "latitude": "51.0404978",
+    "longitude": "-114.0725934"
   }
 ]

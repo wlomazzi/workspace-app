@@ -35,3 +35,4 @@ Thumbs.db
 .env.development
 .env.test
 .env.production
+.vercel
