@@ -121,7 +121,7 @@ document.getElementById("fileInput").addEventListener("change", async function (
 
             if (result.success) {
                 // Update the profile image source on the page
-                document.getElementById("profile-pic").src = `/public/img_profile/user_${user.user_id}.jpg`;
+                document.getElementById("profile-pic").src = `/img_profile/user_${user.user_id}.jpg`;
                 alert("Profile picture updated successfully.");
             } else {
                 alert("Failed to update profile picture.");

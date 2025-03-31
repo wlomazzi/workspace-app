@@ -102,8 +102,8 @@ router.post("/", upload.array("images", 4), (req, res) => {
             },
             available_from: req.body.available_from,
             rating: spaces[spaceIndex].rating, // Keep the old rating
-            image: req.files && req.files.length > 0 ? "/public/img_spaces/" + req.files[0].filename : spaces[spaceIndex].image,
-            images: req.files && req.files.length > 0 ? req.files.map(file => "/public/img_spaces/" + file.filename) : spaces[spaceIndex].images,
+            image: req.files && req.files.length > 0 ? "/img_spaces/" + req.files[0].filename : spaces[spaceIndex].image,
+            images: req.files && req.files.length > 0 ? req.files.map(file => "/img_spaces/" + file.filename) : spaces[spaceIndex].images,
             latitude: req.body.latitude,
             longitude: req.body.longitude
         };
@@ -135,8 +135,8 @@ router.post("/", upload.array("images", 4), (req, res) => {
             },
             available_from: req.body.available_from,
             rating: 0, // New spaces have no rating yet
-            image: req.files && req.files.length > 0 ? "/public/img_spaces/" + req.files[0].filename : "/public/img_spaces/workplace1.jpg", // Default image if no file uploaded
-            images: req.files && req.files.length > 0 ? req.files.map(file => "/public/img_spaces/" + file.filename) : ["/public/img_spaces/workplace1.jpg", "/public/img_spaces/workplace1.jpg"],
+            image: req.files && req.files.length > 0 ? "/img_spaces/" + req.files[0].filename : "/img_spaces/workplace1.jpg", // Default image if no file uploaded
+            images: req.files && req.files.length > 0 ? req.files.map(file => "/img_spaces/" + file.filename) : ["/img_spaces/workplace1.jpg", "/img_spaces/workplace1.jpg"],
             latitude: req.body.latitude,
             longitude: req.body.longitude
         };

@@ -20,9 +20,9 @@
     },
     "available_from": "2025-03-01",
     "rating": 0,
-    "image": "/public/img_spaces/space_m8o1w8pszeaeha.jpg",
+    "image": "/img_spaces/space_m8o1w8pszeaeha.jpg",
     "images": [
-      "/public/img_spaces/space_m8o1w8pszeaeha.jpg"
+      "/img_spaces/space_m8o1w8pszeaeha.jpg"
     ],
     "latitude": "51.12954056117403",
     "longitude": "-114.2120073046352"
@@ -48,12 +48,12 @@
     },
     "available_from": "2025-03-30",
     "rating": 0,
-    "image": "/public/img_spaces/space_m8ohtp6hc7bz23.jpg",
+    "image": "img_spaces/space_m8ohtp6hc7bz23.jpg",
     "images": [
-      "/public/img_spaces/space_m8ohtp6hc7bz23.jpg",
-      "/public/img_spaces/space_m8ohtp72gly8xi.jpg",
-      "/public/img_spaces/space_m8ohtp74px3zo9.jpg",
-      "/public/img_spaces/space_m8ohtp79h181wr.jpg"
+      "img_spaces/space_m8ohtp6hc7bz23.jpg",
+      "img_spaces/space_m8ohtp72gly8xi.jpg",
+      "img_spaces/space_m8ohtp74px3zo9.jpg",
+      "img_spaces/space_m8ohtp79h181wr.jpg"
     ],
     "latitude": "51.12954056117403",
     "longitude": "-114.2120073046352"
@@ -79,10 +79,10 @@
     },
     "available_from": "2025-03-26",
     "rating": 0,
-    "image": "/public/img_spaces/space_m8q0iio4wkp1ed.jpg",
+    "image": "img_spaces/space_m8q0iio4wkp1ed.jpg",
     "images": [
-      "/public/img_spaces/space_m8q0iio4wkp1ed.jpg",
-      "/public/img_spaces/space_m8q0iiouf0pxmh.jpg"
+      "img_spaces/space_m8q0iio4wkp1ed.jpg",
+      "img_spaces/space_m8q0iiouf0pxmh.jpg"
     ],
     "latitude": "51.0404978",
     "longitude": "-114.0725934"
