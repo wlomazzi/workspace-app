@@ -90,3 +90,45 @@ async function logout() {
     document.getElementById('preview').innerHTML = '';
   }
 }
+
+
+
+
+// Inicialização do Supabase
+// Função para buscar workspaces do Supabase e exibir na tabela
+async function fetchWorkspaces() {
+    // Fazer a consulta na tabela 'workspaces'
+    const { data, error } = await supabaseClient
+        .from('workspaces')
+        .select('*'); // Seleciona todas as colunas, você pode filtrar conforme necessário
+
+    if (error) {
+        console.error('Erro ao buscar workspaces:', error);
+        return;
+    }
+
+    // Preencher a tabela com os dados recebidos
+    const tableBody = document.getElementById('workspaces-table').getElementsByTagName('tbody')[0];
+
+    // Limpar a tabela antes de adicionar novos dados
+    tableBody.innerHTML = '';
+
+    data.forEach(workspace => {
+        const row = tableBody.insertRow();
+
+        const cellId = row.insertCell(0);
+        const cellName = row.insertCell(1);
+        const cellAddress = row.insertCell(2);
+        const cellPrice = row.insertCell(3);
+        const cellCapacity = row.insertCell(4);
+
+        cellId.textContent = workspace.id;
+        cellName.textContent = workspace.title;
+        cellAddress.textContent = workspace.location;
+        cellPrice.textContent = workspace.price_per_hour;
+        cellCapacity.textContent = workspace.description;
+    });
+}
+
+// Chamar a função para carregar os dados quando a página for carregada
+window.onload = fetchWorkspaces;

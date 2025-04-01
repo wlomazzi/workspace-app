@@ -8,12 +8,6 @@
     <link rel="stylesheet" href= "/components/navbar.css">
     <link rel="stylesheet" href= "/components/footer.css">
     
-    <link rel="stylesheet" href= "supabase_style.css" />
-
-    <script defer src="/components/navbar.js"></script>
-    <script defer src="/components/footer.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
     <header>
@@ -57,7 +51,7 @@
     </div>
 
     <!-- Scripts: ordem importa! -->
-    <script src="supabase_config.js"></script> <!-- Suas credenciais do Supabase -->
-    <script src="supabase_script.js"></script> <!-- Script que contém a lógica para buscar e exibir os workspaces -->
+    <script src="./workspacesFetcher.js"></script>
+    
 </body>
 </html>

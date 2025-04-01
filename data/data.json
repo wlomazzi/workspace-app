@@ -86,5 +86,36 @@
     ],
     "latitude": "51.0404978",
     "longitude": "-114.0725934"
+  },
+  {
+    "id": 4,
+    "user_id": "2",
+    "title": "Downtown Office",
+    "details": "dsah jsahdah sjkdas gasdgjhgd hjdgj agsdj\r\ns fjskdhgjf shdjh",
+    "price": "200",
+    "address": "Downtown East Village, Calgary, Alberta, Canada",
+    "neighborhood": "Calgary",
+    "workspace_seats": "2",
+    "type": "private_office",
+    "lease_time": "week",
+    "amenities": {
+      "kitchen": false,
+      "parking": false,
+      "public_transport": true,
+      "wifi": true,
+      "printer": false,
+      "air_conditioning": false
+    },
+    "available_from": "2025-03-30",
+    "rating": 0,
+    "image": "/img_spaces/space_m8xf614mio53bc.jpg",
+    "images": [
+      "/img_spaces/space_m8xf614mio53bc.jpg",
+      "/img_spaces/space_m8xf614uegmhbu.jpg",
+      "/img_spaces/space_m8xf614zcu8pm7.jpg",
+      "/img_spaces/space_m8xf61526ptt3n.jpg"
+    ],
+    "latitude": "51.0464963",
+    "longitude": "-114.0506433"
   }
 ]

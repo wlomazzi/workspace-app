@@ -1,9 +1,13 @@
+require('dotenv').config();  // Carregar variáveis de ambiente
+
+
 const express = require("express");
 const app = express();
 const path = require("path");
 const cors = require("cors");
-
 const PORT = 3000;
+
+// Carregar variáveis de ambiente
 
 // Middleware
 app.use(express.json()); // Allows JSON body parsing
@@ -14,6 +18,27 @@ app.use(cors());         // Enables CORS for all requests
 const usersRoutes = require("./api/users/users");
 const spacesRoutes = require("./api/spaces/spaces");
 const spacesRentedRoutes = require("./api/spaces/spaces_rented"); // ✅ NEW route added here
+
+const workspaces = require('./api/spaces/workspaces');
+
+// Usar o CORS para permitir todas as origens
+app.use(cors());
+
+// Usar o arquivo workspaces.js como uma rota
+app.use('/api/spaces/workspaces', workspaces);
+
+// Middleware para permitir requisições CORS
+/*
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
+*/
+//// Usar o arquivo workspaces.js como uma rota
+app.use('/api/spaces/workspaces', workspaces);
+
 
 // Registering API endpoints
 app.use("/api/users", usersRoutes);
