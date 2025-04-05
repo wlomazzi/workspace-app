@@ -15,7 +15,7 @@
     "rented_to": "2025-03-06",
 	"rent_total": "500",
     "rating": 5,
-    "image": "/img_spaces/space_m8o1beks8p3wwo.jpg"
+    "image": "/public/img_spaces/space_m8o1beks8p3wwo.jpg"
   },
   {
     "id": 1,
@@ -33,7 +33,7 @@
     "rented_to": "2025-03-10",
 	"rent_total": "500",
     "rating": 0,
-    "image": "/img_spaces/space_m8o1beks8p3wwo.jpg"
+    "image": "/public/img_spaces/space_m8o1beks8p3wwo.jpg"
   },
   {
     "id": 1,
@@ -50,6 +50,6 @@
     "rented_from": "2025-03-01",
     "rented_to": "2025-03-06",
 	"rent_total": "500",
-    "image": "/img_spaces/space_m8o1beks8p3wwo.jpg"
+    "image": "/public/img_spaces/space_m8o1beks8p3wwo.jpg"
   }
 ]

@@ -7,7 +7,7 @@
     "lastName": "Lomazzi e Souza",
     "email": "wlomazzi@gmail.com",
     "location": "Calgary, Canada",
-    "profilePic": "/img_profile/user_1.png"
+    "profilePic": "/public/img_profile/user_1.png"
   },
   {
     "user_id": "2",
@@ -17,7 +17,7 @@
     "lastName": "Lomazzi",
     "email": "wlomazzi@gmail.com",
     "location": "Calgary, Canada",
-    "profilePic": "/img_profile/user_2.jpg"
+    "profilePic": "/public/img_profile/user_2.jpg"
   },
   {
     "user_id": "3",
@@ -27,6 +27,6 @@
     "lastName": "Test test",
     "email": "wlomazzi@gmail.com",
     "location": "Calgary, Canada",
-    "profilePic": "/img_profile/user_3.png"
+    "profilePic": "/public/img_profile/user_3.png"
   }
 ]
