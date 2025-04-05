@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();  // Carrega as variáveis de ambiente do arquivo .env
 
 import express from 'express';
+import path from 'path';  // Necessário para servir arquivos estáticos corretamente
 import { supabase } from './lib/supabase.js';  // Importa o cliente do Supabase
 
 const app = express();
@@ -10,12 +11,21 @@ const port = process.env.PORT || 3000;  // Define a porta (ou 3000 como padrão)
 // Serve arquivos estáticos da pasta 'public'
 app.use(express.static('public'));  // Serve arquivos da pasta public
 
+// Rota para servir o arquivo index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve o index.html da pasta public
+});
+app.get('/test.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'test.html'));  // Serve workspaces.html
+});
+
+
 // Rota para exibir os dados da tabela "workspaces"
-app.get('/', async (req, res) => {
+app.get('/workspaces', async (req, res) => {
   try {
     // Faz a consulta na tabela "workspaces" do Supabase
     const { data, error } = await supabase.from('workspaces').select('*');
-    
+
     // Verifica se houve erro ao consultar os dados
     if (error) {
       return res.status(500).json({ error: error.message });
