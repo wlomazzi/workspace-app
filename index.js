@@ -7,6 +7,8 @@ import { supabase } from './lib/supabase.js';  // Importa o cliente do Supabase
 const app = express();
 const port = process.env.PORT || 3000;  // Define a porta (ou 3000 como padrão)
 
+// Serve arquivos estáticos da pasta 'public'
+app.use(express.static('public'));  // Serve arquivos da pasta public
 
 // Rota para exibir os dados da tabela "workspaces"
 app.get('/', async (req, res) => {
