@@ -119,7 +119,7 @@ router.put("/update", (req, res) => {
 // Configuring multer for image storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, "../../public/img_profile");
+        const uploadPath = path.join(__dirname, "../../img_profile");
         fs.mkdirSync(uploadPath, { recursive: true }); // Check if the folder exists, if not, create it
         cb(null, uploadPath);
     },
@@ -165,7 +165,7 @@ router.post("/update/profile_picture", upload.single("image"), (req, res) => {
 
     // Update the user's profilePic field with the new image path
     const ext = path.extname(req.file.originalname); // Keep the original file extension (.jpg, .png, etc.)
-    users[userIndex].profilePic = `/public/img_profile/user_${user_id}${ext}`;
+    users[userIndex].profilePic = `/img_profile/user_${user_id}${ext}`;
 
     // Save the updated users array back to the users.json file
     fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
