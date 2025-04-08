@@ -57,7 +57,10 @@ function getStars(rating) {
     return fullStar.repeat(roundedRating) + emptyStar.repeat(maxStars - roundedRating);
 }
 
-
+function openSpaceDetails(spaceId) {
+    alert("Space ID: " + spaceId); // For debugging purposes
+    window.location.href = `space_details.html?id=${spaceId}`;
+}
 
 
 
@@ -346,9 +349,7 @@ function displaySpaces(spaces) {
 
 
 
-function openSpaceDetails(spaceId) {
-    window.location.href = `space_details.html?id=${spaceId}`;
-}
+
   
 
 //<p>Rating: ${space.rating}</p>
