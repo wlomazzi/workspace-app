@@ -1,28 +1,67 @@
-document.addEventListener("DOMContentLoaded", () => {
-    fetchSpaces();
-});
+// Function to open the space details page
+async function fetchAndDisplayWorkspaces() {
+    try {
+        const response = await fetch('/api/spaces/workspaces'); // Call the API to get the workspaces data
+        const spaces = await response.json();  // Convert the response to JSON
 
-
-// Update json data dynamically
-function updateSpaces(newData) {
-    fetch("http://localhost:3000/api/spaces", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(newData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-        fetchSpaces(); // Reload spaces after updating
-    })
-    .catch(error => console.error("Error updating data:", error));
+        displaySpaces(spaces);  // Call the function to display the spaces on the page
+    } catch (error) {
+        console.error("Erro ao buscar dados dos workspaces:", error);
+    }
 }
 
-/* SEARCH BAR
-// Create and display a shadowed container with icons and search items instead of the title Featured Coworking Spaces
-*/
+// Function to filter the spaces based on the search criteria
+function displaySpaces(spaces) {
+    const spacesContainer = document.querySelector(".spaces");
+    spacesContainer.innerHTML = "";  // Clear the container before displaying new spaces
+
+    spaces.forEach(space => {
+        const spaceElement = document.createElement("div");
+        spaceElement.classList.add("space");
+
+        spaceElement.setAttribute("onclick", `openSpaceDetails('${space.id}')`);
+        spaceElement.innerHTML = `
+            <img src="${space.image_01}" alt="${space.title}">
+            <p><strong>${space.title}</strong></p>
+            <p style="color:#969494;">${space.neighborhood}</p>
+            <p><strong>C$ ${space.price}</strong> ${space.lease_time}</p>
+            <p>Seats 👤: ${space.seats}</p>
+            <p>Rating: ${getStars(space.rating)} (${space.rating})</p>
+            <hr>
+            <p>
+                ${space.amn_parking ? '<img src="/images/icon-parking.png" alt="Parking" class="icon">' : ""}
+                ${space.amn_public_transport ? '<img src="/images/icon-public-transport.png" alt="Public transport?" class="icon">' : ""}
+                ${space.amn_kitchen ? '<img src="/images/icon-kitchen.png" alt="Kitchen/Cafee" class="icon">' : ""}
+                ${space.amn_wifi ? '<img src="/images/icon-wifi.png" alt="Wifi" class="icon">' : ""}
+                ${space.amn_printer ? '<img src="/images/icon-printer.png" alt="Printer" class="icon">' : ""}
+                ${space.amn_air ? '<img src="/images/icon-air-conditioner.png" alt="Air Conditioning" class="icon">' : ""}
+            </p>
+        `;
+        
+        spacesContainer.appendChild(spaceElement);
+    });
+}
+
+// Load the workspaces when the page is loaded
+window.onload = fetchAndDisplayWorkspaces;
+
+function getStars(rating) {
+    const maxStars = 5; // Máximo de estrelas
+    const fullStar = "⭐"; // Estrela cheia
+    const emptyStar = "☆"; // Estrela vazia
+
+    //Convert rating to a number and round it
+    const roundedRating = Math.round(rating); 
+
+    // Generate the star rating string
+    return fullStar.repeat(roundedRating) + emptyStar.repeat(maxStars - roundedRating);
+}
+
+
+
+
+
+// SEARCH BAR - // Create and display a shadowed container with icons and search items instead of the title Featured Coworking Spaces
 const featuredSection = document.querySelector(".search");
 if (featuredSection) {
     featuredSection.innerHTML = `
@@ -56,9 +95,8 @@ if (featuredSection) {
 }
 
 
-
-/* FILTER FORM: Activated when click on filter icon
-// Function o show the filter form when clicking the filter icon - on Search bar */
+// FILTER FORM: Activated when click on filter icon
+// Function o show the filter form when clicking the filter icon - on Search bar 
 document.addEventListener("DOMContentLoaded", function() {
     const filterIcon = document.getElementById("filter-icon");
     
@@ -149,10 +187,46 @@ document.addEventListener("click", function(event) {
 
 
 
+
+
+
+
+
+
 /*
-@ Function to filter the spaces by the search bar
-@ The function will be triggered when clicking the Search button
-*/
+document.addEventListener("DOMContentLoaded", () => {
+    fetchSpaces();
+});
+
+
+// Update json data dynamically
+function updateSpaces(newData) {
+    fetch("http://localhost:3000/api/spaces", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+        fetchSpaces(); // Reload spaces after updating
+    })
+    .catch(error => console.error("Error updating data:", error));
+}
+
+
+
+
+
+
+
+
+
+
+// Function to filter the spaces by the search bar
+// The function will be triggered when clicking the Search button
 document.addEventListener("DOMContentLoaded", () => {
     fetchSpaces();
     document.querySelector(".search-bar button").addEventListener("click", filterSpaces);
@@ -270,17 +344,6 @@ function displaySpaces(spaces) {
 }
 
 
-function getStars(rating) {
-    const maxStars = 5; // Máximo de estrelas
-    const fullStar = "⭐"; // Estrela cheia
-    const emptyStar = "☆"; // Estrela vazia
-
-    // Converte o rating para um número
-    const roundedRating = Math.round(rating); 
-
-    // Gera as estrelas
-    return fullStar.repeat(roundedRating) + emptyStar.repeat(maxStars - roundedRating);
-}
 
 
 function openSpaceDetails(spaceId) {
@@ -293,3 +356,4 @@ function displayNoResults() {
     const spacesContainer = document.querySelector(".spaces");
     spacesContainer.innerHTML = `<p class="no-results">No coworking spaces found with the selected filters.</p>`;
 }
+*/

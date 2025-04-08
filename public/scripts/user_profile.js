@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             //console.log("Logged in user: ", user.user_id, user.firstName);
         } else {
             // Redirect to login if not logged in
-            window.location.href = "login.html";
+//            window.location.href = "login.html";
         }
 
         // Fetch owned spaces

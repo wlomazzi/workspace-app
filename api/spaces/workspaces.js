@@ -1,33 +1,20 @@
-const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
-
-
-// Inicializa o cliente do Supabase com as variáveis de ambiente
-const supabase = createClient(
-    process.env.SUPABASE_URL, // A URL do Supabase
-    process.env.SUPABASE_ANON_KEY // A chave pública (anon key)
-);
-
+import express from 'express';
+import { supabase } from '../../lib/supabase.js';  // Import the Supabase client
 
 const router = express.Router();
 
-// Rota GET para buscar os workspaces
-router.get('/', async (req, res) => {
-  try {
-    // Consulta os dados da tabela 'workspaces' no Supabase
-    const { data, error } = await supabase
-      .from('workspaces')
-      .select('*');
-    
-    if (error) {
-      return res.status(500).json({ error: 'Erro ao buscar os workspaces' });
+// Route to return the data from the workspaces
+router.get("/", async (req, res) => {
+    try {
+        const { data, error } = await supabase.from('workspaces').select('*');
+        if (error) {
+            return res.status(500).json({ error: error.message });
+        }
+        res.json(data);  // Return the data as JSON
+    } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+        res.status(500).json({ error: error.message });
     }
-
-    res.status(200).json(data);
-  } catch (err) {
-    console.error('Erro no servidor:', err);
-    res.status(500).json({ error: 'Erro no servidor' });
-  }
 });
 
-module.exports = router;
+export default router;

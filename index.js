@@ -1,32 +1,42 @@
 import dotenv from 'dotenv';
 dotenv.config();  // Carrega as variáveis de ambiente do arquivo .env
 
+
+// Importando a nova API
+import workspacesRouter from './api/spaces/workspaces.js';  // Caminho correto
+
+
+
+
 import express from 'express';
-import path from 'path';  // Corrigido: importando o módulo 'path'
-import { fileURLToPath } from 'url';  // Para converter URL em caminho de arquivo
-import { supabase } from './lib/supabase.js';  // Importa o cliente do Supabase
+import path from 'path';  // Importing the path module to handle file paths
+import { fileURLToPath } from 'url'; // Convert url to path
+import { supabase } from './lib/supabase.js';  // Importing the Supabase client
 
 const app = express();
-const port = process.env.PORT || 3000;  // Define a porta (ou 3000 como padrão)
+const port = process.env.PORT || 3000;  //Define the port to listen on, defaulting to 3000 if not specified in the environment variables
 
-// Usando import.meta.url para obter o diretório atual
+// Using import.meta.url to get the current directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve arquivos estáticos da pasta 'public'
+
+// Define the public folder to serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rota para servir o arquivo index.html
+
+// Mounting the routes from workspaces.js at the path '/api/spaces/workspaces'
+app.use('/api/spaces/workspaces', workspacesRouter);
+
+
+// Rout to serve the index.html file
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve o index.html da pasta public
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve the index.html file from the public folder
 });
 
-// Rota para servir o arquivo test.html
-app.get('/test.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'test.html'));  // Serve test.html da pasta public
-});
 
-// Rota para exibir os dados da tabela "workspaces"
+
+/*
 app.get('/workspaces', async (req, res) => {
   try {
     const { data, error } = await supabase.from('workspaces').select('*');
@@ -34,42 +44,17 @@ app.get('/workspaces', async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    res.send(`
-      <html>
-        <head>
-          <title>Workspaces</title>
-        </head>
-        <body>
-          <h1>Workspaces</h1>
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Location</th>
-                <th>Price per hour</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${data.map(workspace => `
-                <tr>
-                  <td>${workspace.id}</td>
-                  <td>${workspace.title}</td>
-                  <td>${workspace.location}</td>
-                  <td>${workspace.price_per_hour}</td>
-                  <td>${workspace.description}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `);
+    // Envia os dados como JSON para a página
+    res.json(data);
   } catch (error) {
+    console.error('Erro ao buscar dados:', error);
     res.status(500).json({ error: error.message });
   }
 });
+*/
+
+
+
 
 // Inicia o servidor na porta definida
 app.listen(port, () => {
