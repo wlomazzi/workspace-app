@@ -3,8 +3,8 @@ dotenv.config();  // Carrega as variáveis de ambiente do arquivo .env
 
 
 // Importando a nova API
-import workspacesRouter from './api/spaces/workspaces.js';  // Caminho correto
-
+import workspacesRouter from './api/spaces/workspaces.js';  // Importing the workspaces router
+import loginRouter from './api/users/user_login.js';  // Importing the login router
 
 
 
@@ -27,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Mounting the routes from workspaces.js at the path '/api/spaces/workspaces'
 app.use('/api/spaces/workspaces', workspacesRouter);
+app.use('/api/users/user_login', loginRouter);  // Mounting the routes from login.js at the path '/api/users/login'
 
 
 // Rout to serve the index.html file

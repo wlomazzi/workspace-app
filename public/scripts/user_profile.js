@@ -1,5 +1,17 @@
 
-const user = JSON.parse(sessionStorage.getItem("loggedUser"));
+//const user = JSON.parse(sessionStorage.getItem("loggedUser"));
+
+const user = localStorage.getItem('access_token');
+
+if (user) {
+    // Usuário está logado, pode enviar o token para o servidor ou fazer outras ações
+    alert("Usuário está logado.");
+    console.log('Usuário está logado');
+} else {
+    // Usuário não está logado, redirecionar para a tela de login
+    console.log('Usuário não está logado');
+}
+
 
 document.addEventListener("DOMContentLoaded", async function () {
     try {

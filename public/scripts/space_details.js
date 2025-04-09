@@ -4,6 +4,7 @@ let calendarPrice = 0;
 
 
 
+// Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID ----------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async function () {
     const urlParams = new URLSearchParams(window.location.search);
     const spaceId = urlParams.get("id");
@@ -47,17 +48,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     }    
 
 
-    // Default image
-    mainImage.src = spaceData.images?.[0] || spaceData.image_01;
-    mainImage.alt = spaceData.title;
-
-    // Get all images and generate thumbnails
+    // Get all images and generate thumbnails and default image
     generateImages(spaceData);
 
 
-    // Preencher dados
+    // Get all data from the space and display in the HTML
     document.getElementById("space-title").textContent = spaceData.title;
-    document.getElementById("space-details").textContent = spaceData.details || "Sem descrição";
+    document.getElementById("space-details").textContent = spaceData.details || "No description available.";
     document.getElementById("space-price").textContent = `C$ ${spaceData.price}`;
     document.getElementById("space-lease").textContent = spaceData.lease_time;
     document.getElementById("space-neighborhood").textContent = spaceData.neighborhood;
@@ -68,8 +65,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Store the lease type and price for later use in the calendar
     calendarLeaseType = spaceData.lease_time;
     calendarPrice = parseFloat(spaceData.price);
-
-
 
     // Defining the icons for each amenity
     const amenityIcons = {
@@ -83,38 +78,38 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Checking if the spaceData object has the keys defined in amenityIcons and if the value is true, then create the icon element
     Object.keys(amenityIcons).forEach(key => {
-        // Verifica se a chave existe em spaceData e se o valor é true
-        if (spaceData[key] === true) {
+        // Check if the key exists in spaceData and if the value is true
+        if (spaceData[key] === true) { // If the value is true, add the icon
             const amenityElement = document.createElement("span");
-            amenityElement.innerHTML = amenityIcons[key]; // Usando a chave correta para acessar o ícone
+            amenityElement.innerHTML = amenityIcons[key]; // Using the icon HTML from the amenityIcons object
             amenitiesContainer.appendChild(amenityElement);
         }
     });
 
-
 });
+// END Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID ------------------------------------------------------------
 
 
-// Function to generate images and thumbnails
+
+// Function to generate images and thumbnails --------------------------------------------------------------------------------------------------------------------------------
 // This function generates the main image and thumbnails for the workspace
 function generateImages(spaceData) {
     const mainImage = document.getElementById("space-image");
     const thumbnailContainer = document.getElementById("thumbnail-container");
     
-    // Default image
+    // Default image: DEFINE THE DEFAULT IMAGE HERE
     mainImage.src = spaceData.image_01 || spaceData.image_01;  // Using image_01 as default
     mainImage.alt = spaceData.title;
 
     // Clear the thumbnail container before adding new ones
     thumbnailContainer.innerHTML = "";
 
-    // alert('Images: ' + spaceData.image_01 + ' - ' + spaceData.image_02 + ' - ' + spaceData.image_03 + ' - ' + spaceData.image_04);
     // Generate thumbnails for image_01, image_02, image_03, image_04
     const images = [
-        { src: spaceData.image_01 || spaceData.image_01, alt: "Thumbnail Image 1" },
-        { src: spaceData.image_02 || spaceData.image_02, alt: "Thumbnail Image 2" },
-        { src: spaceData.image_03 || spaceData.image_03, alt: "Thumbnail Image 3" },
-        { src: spaceData.image_04 || spaceData.image_04, alt: "Thumbnail Image 4" }
+        { src: spaceData.image_01 || spaceData.image_01, alt: "Thumb Img 1" },
+        { src: spaceData.image_02 || spaceData.image_02, alt: "Thumb Img 2" },
+        { src: spaceData.image_03 || spaceData.image_03, alt: "Thumb Img 3" },
+        { src: spaceData.image_04 || spaceData.image_04, alt: "Thumb Img 4" }
     ];
 
     // Generate thumbnails
@@ -131,9 +126,11 @@ function generateImages(spaceData) {
         }
     });
 }
+// END Function to generate images and thumbnails ----------------------------------------------------------------------------------------------------------------------------
 
 
-// Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID
+
+// Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID ----------------------------------------------------------------
 async function getSpaceById(id) {
     try {
         const response = await fetch(`/api/spaces/workspaces?id=${id}`);  // Relative URL to the API endpoint
@@ -151,13 +148,14 @@ async function getSpaceById(id) {
 
         return data[0];  // Return the first (and only) element of the array
     } catch (error) {
-        console.error("Erro ao buscar espaço:", error);
+        console.error("Error fetching space data:", error);
         return null;
     }
 }
+// END Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID ------------------------------------------------------------
 
 
-// Shows the stars based on the rating. This function generates a string of stars based on the rating value
+// Shows the stars based on the rating. This function generates a string of stars based on the rating value ------------------------------------------------------------------
 function getStars(rating) {
     const fullStar = "⭐";
     const emptyStar = "☆";
@@ -165,13 +163,14 @@ function getStars(rating) {
     const rounded = Math.round(rating);
     return fullStar.repeat(rounded) + emptyStar.repeat(maxStars - rounded);
 }
+// END Shows the stars based on the rating. This function generates a string of stars based on the rating value -------------------------------------------------------------
 
 
 
 
-
-
-// Function to fetch reservations by workspace ID from the API
+// Function to fetch reservations by workspace ID from the API -------------------------------------------------------------------------------------------------------------
+// This function fetches all reservations for a specific workspace ID from the API
+// and returns the data as an array. It handles errors and logs them to the console.
 async function getReservationsByWorkspaceId(id) {
 
     try {
@@ -190,279 +189,117 @@ async function getReservationsByWorkspaceId(id) {
 
         return data;  // Return all reservation data
     } catch (error) {
-        console.error("Erro ao buscar as reservas:", error);
+        console.log("Error fetching reservations:", error);
         return [];
     }
 }
+// END Function to fetch reservations by workspace ID from the API ---------------------------------------------------------------------------------------------------------
 
 
 
-
-//CALENDAR: Select the dates and calculate the value 
+// CALENDAR: Select the dates and calculate the value ---------------------------------------------------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const spaceId   = urlParams.get("id");
     const reservations = await getReservationsByWorkspaceId(spaceId);
+    let occupiedDates = []; // Array to store occupied dates
     if (reservations.length > 0) {
-        // Exibir as reservas na interface ou manipulá-las
-        console.log("Reservas encontradas:", reservations);
-
-        const occupiedDates = getOccupiedDates(reservations); // Array to store occupied dates
-
-        // Initialize flatpickr for the date range input
-        flatpickr("#date-range", {
-            mode: "range",  // Allow date range selection
-            minDate: "today", // Disallow past dates
-            disable: occupiedDates, // Disable occupied dates
-            dateFormat: "Y-m-d",  // Set date format
-            onDayCreate: function (dObj, dStr, instance) {
-                const occupied = occupiedDates.includes(dStr); // Check if the date is occupied
-                if (occupied) {
-                    // Apply a different color for occupied dates
-                    dObj.classList.add("occupied");
-                }
-            },        
-            onClose: function(selectedDates) {
-                if (selectedDates.length === 2) {
-                    const startDate = new Date(selectedDates[0]);
-                    const endDate = new Date(selectedDates[1]);
-                    const diffTime = Math.abs(endDate - startDate);
-                    let totalUnits;
-    
-                    // Verifica qual unidade usar (day, week, month)
-                    if (calendarLeaseType === "day") {
-                        totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    } else if (calendarLeaseType === "week") {
-                        totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-                    } else if (calendarLeaseType === "month") {
-                        totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
-                    } else {
-                        totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Default para dias
-                    }
-    
-                    // Calcula o preço total
-                    const totalPrice = totalUnits * calendarPrice;
-    
-                    // Atualiza a mensagem no HTML
-                    document.getElementById("message").innerHTML = `
-                        <p>You selected <strong>${totalUnits} ${calendarLeaseType}(s)</strong>.</p>
-                        <br>
-                        <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
-                    `;
-                }
-            }
-
-        });
-
-
+        // Shows the reservations in the console for debugging
+        console.log("Reservations:", reservations);
+        occupiedDates = getOccupiedDates(reservations); // Array to store occupied dates
     } else {
-        console.log("Nenhuma reserva encontrada para este workspace.");
+        console.log("No reservations found for this workspace.");
     }
+
+    // CALENDAR - Initialize flatpickr for the date range input ------------------------------------------------------------------
+    flatpickr("#date-range", {
+        mode: "range",          // Allow date range selection
+        minDate: "today",       // Disallow past dates
+        disable: occupiedDates, // Disable occupied dates - Returned by the API getReservationsByWorkspaceId(spaceId);
+        dateFormat: "Y-m-d",    // Set date format
+        onDayCreate: function (dObj, dStr, instance) {
+            const occupied = occupiedDates.includes(dStr); // Check if the date is occupied
+            if (occupied) {
+                // Apply a different color for occupied dates
+                dObj.classList.add("occupied");
+            }
+        },        
+        onClose: function(selectedDates) {
+            if (selectedDates.length === 2) {
+                const startDate = new Date(selectedDates[0]);
+                const endDate = new Date(selectedDates[1]);
+                const diffTime = Math.abs(endDate - startDate);
+                let totalUnits;
+
+                // Check which unit to use (day, week, month) and Do the calculation -----------------------
+                // Calculation units: day, week, month
+                if (calendarLeaseType === "day") {
+                    totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                } else if (calendarLeaseType === "week") {
+                    totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+                } else if (calendarLeaseType === "month") {
+                    totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
+                } else {
+                    totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Default para dias
+                }
+
+                // Calculate the total price, based on the selected unit and price
+                const totalPrice = totalUnits * calendarPrice;
+
+                // Update the message in the HTML
+                document.getElementById("message").innerHTML = `
+                    <p>You selected <strong>${totalUnits} ${calendarLeaseType}(s)</strong>.</p>
+                    <br>
+                    <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
+                `;
+            }
+        }
+    });
+    // END CALENDAR - Initialize flatpickr for the date range input --------------------------------------------------------------
 });
+// END CALENDAR: Select the dates and calculate the value -----------------------------------------------------------------------------------------------------------------
 
 
 
-// Função para gerar as datas ocupadas a partir das reservas
+
+
+
+// This function generates the occupied dates from the reservations array--------------------------------------------------------------------------------------------------
+// It takes an array of reservations and returns an array of occupied dates without duplicates.
 function getOccupiedDates(reservations) {
     const occupiedDates = [];
 
-    // Função auxiliar para gerar o intervalo de datas
+    // This function generates the date range between two dates
     function generateDateRange(start, end) {
         const dates = [];
         const currentDate = new Date(start);
         const finalDate = new Date(end);
-
-        // Loop até a data final
+        // Loop through all dates between start and end dates (inclusive)
         while (currentDate <= finalDate) {
-            // Formata a data para "YYYY-MM-DD"
+            // Date format: YYYY-MM-DD
             dates.push(currentDate.toISOString().split('T')[0]);
-            // Avança um dia
+            // Avance one day
             currentDate.setDate(currentDate.getDate() + 1);
         }
-
         return dates;
     }
 
-    // Para cada reserva, gerar o intervalo de datas e adicionar ao array de occupiedDates
+    // For each reservation, generate the date range and add to the occupiedDates array
     reservations.forEach(reservation => {
         const dates = generateDateRange(reservation.start_time, reservation.end_time);
-        occupiedDates.push(...dates); // Adiciona todas as datas ao array ocupado
+        occupiedDates.push(...dates); // Add all dates to the occupiedDates array
     });
 
-    // Retorna o array de datas ocupadas sem duplicatas
+    // Return an array of occupied dates without duplicates
     return [...new Set(occupiedDates)];
 }
-/*
-// Exemplo de uso com as reservas fornecidas
-const reservations = [
-    {
-        "id": "74564cfc-5aed-461c-935b-f26d35e601b6",
-        "created_at": "2025-04-08T13:20:50.065833+00:00",
-        "updated_at": "2025-04-08T13:20:50.065833+00:00",
-        "workspace_id": "39dded3b-36c7-4c79-89a4-c545410efa9f",
-        "user_id": "fa347105-9ece-4e81-a2bb-2449d582fedd",
-        "start_time": "2025-04-08",
-        "end_time": "2025-04-11",
-        "status": "confirmed",
-        "payment_status": "paid"
-    },
-    {
-        "id": "996651d0-804b-4ebf-ac65-299e4f6d151c",
-        "created_at": "2025-04-08T14:14:52.767778+00:00",
-        "updated_at": "2025-04-08T14:14:52.767778+00:00",
-        "workspace_id": "39dded3b-36c7-4c79-89a4-c545410efa9f",
-        "user_id": "fa347105-9ece-4e81-a2bb-2449d582fedd",
-        "start_time": "2025-04-14",
-        "end_time": "2025-04-18",
-        "status": "confirmed",
-        "payment_status": "paid"
-    }
-];
-
-const occupiedDates = getOccupiedDates(reservations);
-console.log({
-    "dates": occupiedDates
-});
-*/
+// END This function generates the occupied dates from the reservations array -----------------------------------------------------------------------------------------------
 
 
 
 
 
-/*
 
-document.addEventListener('DOMContentLoaded', function () {
-    const spaceId = new URLSearchParams(window.location.search).get('id'); // Get the space_id from URL
-
-    // Fetch the occupied dates for the space
-    console.log('spaceId:', spaceId); 
-    fetch(`http://localhost:3000/api/spaces/occupied-dates?space_id=${spaceId}`)
-        .then(response => response.json())
-        .then(data => {
-            const occupiedDates = data.occupied_dates; // Array of occupied dates
-            console.log(occupiedDates);
-
-            // Initialize flatpickr for the date range input
-            flatpickr("#date-range", {
-                mode: "range",  // Allow date range selection
-                minDate: "today", // Disallow past dates
-                disable: occupiedDates, // Disable occupied dates
-                dateFormat: "Y-m-d",  // Set date format
-                onDayCreate: function (dObj, dStr, instance) {
-                    const occupied = occupiedDates.includes(dStr); // Check if the date is occupied
-                    if (occupied) {
-                        // Apply a different color for occupied dates
-                        dObj.classList.add("occupied");
-                    }
-                },        
-                onClose: function(selectedDates) {
-                    if (selectedDates.length === 2) {
-                        const startDate = new Date(selectedDates[0]);
-                        const endDate = new Date(selectedDates[1]);
-                        const diffTime = Math.abs(endDate - startDate);
-                        let totalUnits;
-        
-                        // Verifica qual unidade usar (day, week, month)
-                        if (calendarLeaseType === "day") {
-                            totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        } else if (calendarLeaseType === "week") {
-                            totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-                        } else if (calendarLeaseType === "month") {
-                            totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
-                        } else {
-                            totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Default para dias
-                        }
-        
-                        // Calcula o preço total
-                        const totalPrice = totalUnits * calendarPrice;
-        
-                        // Atualiza a mensagem no HTML
-                        document.getElementById("message").innerHTML = `
-                            <p>You selected <strong>${totalUnits} ${calendarLeaseType}(s)</strong>.</p>
-                            <br>
-                            <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
-                        `;
-                    }
-                }
-
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching occupied dates:", error);
-        });
-
-});
-*/
-
-
-
-
-
-/*
-
-//CALENDAR: Select the dates and calculate the value 
-document.addEventListener('DOMContentLoaded', function () {
-    const spaceId = new URLSearchParams(window.location.search).get('id'); // Get the space_id from URL
-
-    // Fetch the occupied dates for the space
-    console.log('spaceId:', spaceId); 
-    fetch(`http://localhost:3000/api/spaces/occupied-dates?space_id=${spaceId}`)
-        .then(response => response.json())
-        .then(data => {
-            const occupiedDates = data.occupied_dates; // Array of occupied dates
-            console.log(occupiedDates);
-
-            // Initialize flatpickr for the date range input
-            flatpickr("#date-range", {
-                mode: "range",  // Allow date range selection
-                minDate: "today", // Disallow past dates
-                disable: occupiedDates, // Disable occupied dates
-                dateFormat: "Y-m-d",  // Set date format
-                onDayCreate: function (dObj, dStr, instance) {
-                    const occupied = occupiedDates.includes(dStr); // Check if the date is occupied
-                    if (occupied) {
-                        // Apply a different color for occupied dates
-                        dObj.classList.add("occupied");
-                    }
-                },        
-                onClose: function(selectedDates) {
-                    if (selectedDates.length === 2) {
-                        const startDate = new Date(selectedDates[0]);
-                        const endDate = new Date(selectedDates[1]);
-                        const diffTime = Math.abs(endDate - startDate);
-                        let totalUnits;
-        
-                        // Verifica qual unidade usar (day, week, month)
-                        if (calendarLeaseType === "day") {
-                            totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        } else if (calendarLeaseType === "week") {
-                            totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
-                        } else if (calendarLeaseType === "month") {
-                            totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
-                        } else {
-                            totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Default para dias
-                        }
-        
-                        // Calcula o preço total
-                        const totalPrice = totalUnits * calendarPrice;
-        
-                        // Atualiza a mensagem no HTML
-                        document.getElementById("message").innerHTML = `
-                            <p>You selected <strong>${totalUnits} ${calendarLeaseType}(s)</strong>.</p>
-                            <br>
-                            <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
-                        `;
-                    }
-                }
-
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching occupied dates:", error);
-        });
-
-});
-*/
 
 
 // BOOKING CONFIRMATION - After select the dates and confirm booking 
