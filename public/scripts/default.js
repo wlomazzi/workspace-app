@@ -1,3 +1,5 @@
+const user = localStorage.getItem('user_id');  // Get the user ID from localStorage 
+
 // Function to open the space details page
 async function fetchAndDisplayWorkspaces() {
     try {
@@ -187,6 +189,62 @@ document.addEventListener("click", function(event) {
         filterSpaces();
     }
 });
+
+
+/*
+// Função para enviar o ID do usuário para o servidor
+async function sendSessionData() {
+    const userId = localStorage.getItem('user_id');  // Obtém o ID do usuário do localStorage
+
+    try {
+        const response = await fetch('/api/users/user_login/session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id: userId,  // Passa o user_id no corpo da requisição
+            }),
+        });
+
+        const data = await response.json();
+
+        // Obtém o nome e o avatar do usuário
+        const userName  = data.full_name;
+        const avatarUrl = data.avatar_url;
+
+        // Atualiza o nome do usuário
+        const userNameElement = document.getElementById('user-session-name');
+        if (userNameElement) {
+            userNameElement.textContent = userName;  // Define o nome do usuário no HTML
+        }
+
+        // Atualiza a imagem do perfil do usuário
+        const userProfilePicElement = document.querySelector('user-session-profile-pic');
+        if (userProfilePicElement) {
+            userProfilePicElement.src = avatarUrl;  // Define o URL da imagem do perfil
+            userProfilePicElement.alt = userName;  // Define o texto alternativo com o nome do usuário
+        }        
+
+        if (response.ok) {
+            console.log('Dados da sessão enviados com sucesso:', data);
+        } else {
+            console.error('Erro ao enviar dados da sessão:', data);
+        }
+    } catch (error) {
+        console.error('Erro na requisição:', error);
+    }
+}
+
+if (user) {
+    sendSessionData();
+}
+*/
+
+
+
+
+
 
 
 

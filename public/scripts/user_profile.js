@@ -1,15 +1,18 @@
 
-//const user = JSON.parse(sessionStorage.getItem("loggedUser"));
 
-const user = localStorage.getItem('access_token');
+//const user = JSON.parse(sessionStorage.getItem("loggedUser"));
+const user = localStorage.getItem('user_id');
 
 if (user) {
-    // Usuário está logado, pode enviar o token para o servidor ou fazer outras ações
-    alert("Usuário está logado.");
-    console.log('Usuário está logado');
+    // User is logged in, can send the token to the server or do other actions
+    //alert("User ID: " + user);
+    //console.log('Users is logged - ID: ', user);
 } else {
-    // Usuário não está logado, redirecionar para a tela de login
-    console.log('Usuário não está logado');
+    // User is not logged in
+    alert("User is not logged in. Please log in to access this page.");
+    // Redirect to login page or show a message
+    window.location.href = 'login.html'; // Uncomment this line to redirect to login page
+    console.log('User is not logged in');
 }
 
 
@@ -24,10 +27,73 @@ document.addEventListener("DOMContentLoaded", async function () {
 //            window.location.href = "login.html";
         }
 
+        const userId         = localStorage.getItem('user_id');  // Obtém o ID do usuário do localStorage
+        const userEmail      = localStorage.getItem('user_email');  // Obtém o email do usuário do localStorage
+        const userLocation   = localStorage.getItem('user_location');  // Obtém o nome do usuário do localStorage
+        const userFullName   = localStorage.getItem('user_fullname');  // Obtém o nome do usuário do localStorage
+        const userProfilePic = localStorage.getItem('user_picture');  // Obtém o nome do usuário do localStorage
+
+
+        try {
+
+            const response = await fetch('/api/spaces/workspaces/filter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,  // Passa o user_id no corpo da requisição
+                }),
+            });
+    
+            const data = await response.json();
+    
+            console.log('JSON data:', data); // Aqui você pode ver os dados do usuário retornados pelo servidor
+
+            // Build user data
+            const userData = {
+                name: userFullName,
+                email: userEmail,
+                location: userLocation,
+                profilePic: userProfilePic,
+                ownedSpaces: data.map(space => ({
+                    id: space.id,
+                    title: space.title,
+                    location: space.neighborhood || "Unknown",
+                    price: `C$ ${space.price} / ${space.lease_time}`,
+                    image: space.image_01
+                }))/*,
+                rentedSpaces: rentedSpaces.map(space => ({
+                    id: space.id,
+                    title: space.title,
+                    location: space.neighborhood || "Unknown",
+                    rented_from: space.rented_from || "Unknown",
+                    rented_to: space.rented_to || "Unknown",
+                    price: `C$ ${space.price}/${space.lease_time}`,
+                    rent_total: `Rent total C$ ${space.rent_total}`,
+                    image: space.image
+                }))*/
+            };
+
+            console.log(userData.rentedSpaces);
+            // Fill user profile info
+            document.getElementById("user-name").textContent = userData.name;
+            document.getElementById("user-email").textContent = userData.email;
+            document.getElementById("user-location").textContent = userData.location;
+            document.querySelector(".profile-pic").src = userData.profilePic;
+    
+            // Populate spaces
+            populateSpacesOwned("owned-spaces", userData.ownedSpaces);
+            populateSpacesRented("rented-spaces", userData.rentedSpaces);
+
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+        }
+/*
         // Fetch owned spaces
-        const ownedResponse = await fetch("http://localhost:3000/api/spaces");
+        const ownedResponse  = await fetch("http://localhost:3000/api/spaces");
         const allOwnedSpaces = await ownedResponse.json();
-        const ownedSpaces = allOwnedSpaces.filter(space => space.user_id === user.user_id);
+        const ownedSpaces    = allOwnedSpaces.filter(space => space.user_id === user.user_id);
 
         // Fetch rented spaces
         const rentedResponse  = await fetch("http://localhost:3000/api/spaces_rented");
@@ -61,7 +127,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             }))
         };
 
-        //console.log(userData.rentedSpaces);
+        console.log(userData.rentedSpaces);
         // Fill user profile info
         document.getElementById("user-name").textContent = userData.name;
         document.getElementById("user-email").textContent = userData.email;
@@ -71,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Populate spaces
         populateSpacesOwned("owned-spaces", userData.ownedSpaces);
         populateSpacesRented("rented-spaces", userData.rentedSpaces);
-
+*/
     } catch (error) {
         console.error("Error loading user data:", error);
     }

@@ -2,40 +2,64 @@ document.addEventListener("DOMContentLoaded", function () {
     // Fetch the navbar HTML and insert it into the page first
     fetch("/components/navbar.html") // Path to the navbar HTML file
         .then(response => response.text()) // Convert the response to text
-        .then(html => {
+        .then(async html => {
             const navbarContainer = document.createElement("div");
             navbarContainer.innerHTML = html;
 
             // Insert the navbar HTML at the top of the body
             document.body.insertBefore(navbarContainer, document.body.firstChild);
 
-            // Now we can safely access the navbar elements
-            const user = JSON.parse(sessionStorage.getItem("loggedUser"));
+            const userId    = localStorage.getItem('user_id');  // Obtém o ID do usuário do localStorage
+            const userEmail = localStorage.getItem('user_email');  // Obtém o email do usuário do localStorage
 
-            if (user) {
+            if (userId) {
+                //alert("User is logged in, ID: " + userId);
+                try {
+                    const response = await fetch('/api/users/user_login/session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,  // Passa o user_id no corpo da requisição
+                        }),
+                    });
+            
+                    const data = await response.json();
+            
+                    //console.log(data); // Aqui você pode ver os dados do usuário retornados pelo servidor
 
-                const profilePicElement = document.querySelector(".user-session-profile-pic");
-                if (profilePicElement) {
-                    profilePicElement.src = user.profilePic;
+                    localStorage.setItem('user_picture',  data.profile.avatar_url);
+                    localStorage.setItem('user_fullname', data.profile.full_name);
+                    localStorage.setItem('user_location', data.profile.location);
+
+                    const profilePicElement = document.querySelector(".user-session-profile-pic");
+                    if (profilePicElement) {
+                        profilePicElement.src = data.profile.avatar_url;
+                    }
+    
+                    const userNameElement = document.getElementById("user-session-name");
+                    if (userNameElement) {
+                        userNameElement.textContent = `${data.profile.full_name}`;
+                    } else {
+                        console.error("User name element not found.");
+                    }
+    
+                    const userEmailElement = document.getElementById("user-session-email");
+                    if (userEmailElement) {
+                        userEmailElement.textContent = userEmail;
+                    }
+    
+                    const userLocationElement = document.getElementById("user-session-location");
+                    if (userLocationElement) {
+                        userLocationElement.textContent = data.profile.location;
+                    }
+    
+
+                } catch (error) {
+                    console.error('Erro na requisição:', error);
                 }
-
-                const userNameElement = document.getElementById("user-session-name");
-                if (userNameElement) {
-                    userNameElement.textContent = `${user.firstName} ${user.lastName}`;
-                } else {
-                    console.error("User name element not found.");
-                }
-
-                const userEmailElement = document.getElementById("user-session-email");
-                if (userEmailElement) {
-                    userEmailElement.textContent = user.email;
-                }
-
-                const userLocationElement = document.getElementById("user-session-location");
-                if (userLocationElement) {
-                    userLocationElement.textContent = user.location;
-                }
-
+    
             }else{
                 const profilePicElement = document.querySelector(".user-session-profile-pic");
                 if (profilePicElement) {
@@ -83,11 +107,31 @@ document.addEventListener("click", function(event) {
     }
 });
 
-// Function to handle logout
-function logout() {
-    // Remove the logged-in user from sessionStorage
-    sessionStorage.removeItem("loggedUser");
 
-    // Optionally, redirect the user to the login page or homepage
-    window.location.href = "index.html";  // Redirecting to login page
+
+// Function to handle the logout process
+async function logout() {
+    try {
+        const response = await fetch('/api/users/user_login/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Logout realized successfully! You will be redirected to the login page.');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_id');
+            window.location.href = "index.html";
+        } else {
+            console.error('Logout error:', data.error);
+            alert(data.error || 'Logout failed. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+        alert('Logout error, please try again.', error);
+    }
 }
