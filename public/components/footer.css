@@ -1,6 +1,4 @@
-/* Footer - Airbnb Style */
-
-/* Footer fixado no final da página */
+/* Footer fixed at the end of the page */
 footer {
     background: #f7f7f7;
     padding: 40px 10%;
@@ -13,7 +11,7 @@ footer {
 }
 
 
-/* Organiza os links do footer */
+/* Organize footer links */
 .footer-container {
     display: flex;
     justify-content: space-between;
@@ -22,7 +20,7 @@ footer {
     margin: 0 auto;
 }
 
-/* Cada seção do footer */
+/* Each footer section */
 .footer-section {
     display: flex;
     flex-direction: column;
@@ -30,14 +28,14 @@ footer {
     min-width: 200px;
 }
 
-/* Títulos das seções */
+/* Section titles */
 .footer-section h4 {
     font-size: 16px;
     font-weight: bold;
     margin-bottom: 10px;
 }
 
-/* Links do footer */
+/* Footer links */
 .footer-section a {
     text-decoration: none;
     color: #666;
@@ -48,7 +46,7 @@ footer {
     color: black;
 }
 
-/* Responsivo */
+/* Responsive */
 @media (max-width: 768px) {
     .footer-container {
         flex-direction: column;
@@ -60,5 +58,5 @@ footer {
 }
 
 main {
-    padding-bottom: 60px; /* Garante um espaçamento antes do footer */
+    padding-bottom: 60px; /* Ensures space before the footer */
 }

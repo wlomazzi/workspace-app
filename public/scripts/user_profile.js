@@ -1,6 +1,3 @@
-
-
-//const user = JSON.parse(sessionStorage.getItem("loggedUser"));
 const user = localStorage.getItem('user_id');
 
 if (user) {
@@ -15,45 +12,40 @@ if (user) {
     console.log('User is not logged in');
 }
 
-
+// When loaded, return all workspaces related to the user
+// User OWNER
+// User COWORKER
 document.addEventListener("DOMContentLoaded", async function () {
     try {
 
-        //console.log(user);
-        if (user) {
-            //console.log("Logged in user: ", user.user_id, user.firstName);
-        } else {
-            // Redirect to login if not logged in
-//            window.location.href = "login.html";
-        }
+        const userId = localStorage.getItem('user_id'); // Gets the user ID from localStorage
+        const userEmail = localStorage.getItem('user_email'); // Get user email from localStorage
+        const userPhone = localStorage.getItem('user_phone'); // Obtém o telefone do usuário
+        const userLocation = localStorage.getItem('user_location'); // Get user's phone from localStorage
+        const userFullName = localStorage.getItem('user_fullname'); // Gets the full name
+        const userProfilePic = localStorage.getItem('user_picture'); // Get user profile picture from localStorage
 
-        const userId         = localStorage.getItem('user_id');  // Obtém o ID do usuário do localStorage
-        const userEmail      = localStorage.getItem('user_email');  // Obtém o email do usuário do localStorage
-        const userLocation   = localStorage.getItem('user_location');  // Obtém o nome do usuário do localStorage
-        const userFullName   = localStorage.getItem('user_fullname');  // Obtém o nome do usuário do localStorage
-        const userProfilePic = localStorage.getItem('user_picture');  // Obtém o nome do usuário do localStorage
-
-
+        const userIsOwner    = localStorage.getItem('user_owner'); // Checks if the user is an owner
+        const userIsCoworker = localStorage.getItem('user_coworker'); // Checks if the user is a coworker
+        
         try {
-
-            const response = await fetch('/api/spaces/workspaces/filter', {
+            const response = await fetch('/api/spaces/workspaces/owner_spaces', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    user_id: userId,  // Passa o user_id no corpo da requisição
+                    user_id: userId,  // Pass the user_id in the request body
                 }),
             });
-    
-            const data = await response.json();
-    
-            console.log('JSON data:', data); // Aqui você pode ver os dados do usuário retornados pelo servidor
 
-            // Build user data
+            const data = await response.json();
+
+            // Build user data for owned spaces
             const userData = {
                 name: userFullName,
                 email: userEmail,
+                phone: userPhone,
                 location: userLocation,
                 profilePic: userProfilePic,
                 ownedSpaces: data.map(space => ({
@@ -62,86 +54,74 @@ document.addEventListener("DOMContentLoaded", async function () {
                     location: space.neighborhood || "Unknown",
                     price: `C$ ${space.price} / ${space.lease_time}`,
                     image: space.image_01
-                }))/*,
-                rentedSpaces: rentedSpaces.map(space => ({
-                    id: space.id,
-                    title: space.title,
-                    location: space.neighborhood || "Unknown",
-                    rented_from: space.rented_from || "Unknown",
-                    rented_to: space.rented_to || "Unknown",
-                    price: `C$ ${space.price}/${space.lease_time}`,
-                    rent_total: `Rent total C$ ${space.rent_total}`,
-                    image: space.image
-                }))*/
+                }))
             };
 
-            console.log(userData.rentedSpaces);
+            // Fetch rented spaces for the user
+            const respRentedSpaces = await fetch('/api/spaces/workspaces/coworker_spaces', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: userId,  // Pass the user_id in the request body
+                }),
+            });
+
+            // Check if the response status is OK (status code 200-299)
+            if (!respRentedSpaces.ok) {
+                throw new Error('Failed to fetch rented spaces');
+            }
+
+            // Parse the JSON response data
+            const dataRentedSpaces = await respRentedSpaces.json();
+            if (dataRentedSpaces.length === 0) {
+                console.log('No rented spaces found for this user');
+            } else {
+                console.log('dataRentedSpaces:', dataRentedSpaces);
+                const rentedSpaces = dataRentedSpaces.map(space => ({
+                    id: space.workspace_id,
+                    title: space.workspace.title,
+                    location: space.workspace.neighborhood || "Unknown",
+                    rented_from: space.start_time || "Unknown",
+                    rented_to: space.end_time || "Unknown",
+                    price: `C$ ${space.rent_price} / ${space.lease_time}`,
+                    rent_total: `Rent total C$ ${space.rent_total}`,
+                    image: space.workspace.image_01
+                }));
+
+                console.log('rentedSpaces:', rentedSpaces);
+                // Now pass rentedSpaces to the populateSpacesRented function
+                populateSpacesRented("rented-spaces", rentedSpaces);
+            }
+
             // Fill user profile info
             document.getElementById("user-name").textContent = userData.name;
             document.getElementById("user-email").textContent = userData.email;
+            document.getElementById("user-phone").textContent = userData.phone;
             document.getElementById("user-location").textContent = userData.location;
             document.querySelector(".profile-pic").src = userData.profilePic;
     
-            // Populate spaces
-            populateSpacesOwned("owned-spaces", userData.ownedSpaces);
-            populateSpacesRented("rented-spaces", userData.rentedSpaces);
+            // Populate spaces for the user
+            document.querySelector('.add-new-btn').style.display = 'none'; // Show the button if true
+            document.querySelector('.owner-spaces-section').style.display = 'none'; // Hide available spaces for rent
+            document.querySelector('.owner-line').style.display = 'none'; // Show line between Spaces for Rent and Rented Spaces
+            if (userIsOwner === 'true') {
+                populateSpacesOwned("owned-spaces", userData.ownedSpaces);
+                document.querySelector('.add-new-btn').style.display = 'block'; // Show the button if true
+                document.querySelector('.owner-spaces-section').style.display = 'block'; // Show available spaces for rent
+                document.querySelector('.owner-line').style.display = 'block'; // Show line between Spaces for Rent and Rented Spaces
+            }
 
         } catch (error) {
-            console.error('Erro na requisição:', error);
+            console.error('Error in the request:', error);
         }
-/*
-        // Fetch owned spaces
-        const ownedResponse  = await fetch("http://localhost:3000/api/spaces");
-        const allOwnedSpaces = await ownedResponse.json();
-        const ownedSpaces    = allOwnedSpaces.filter(space => space.user_id === user.user_id);
 
-        // Fetch rented spaces
-        const rentedResponse  = await fetch("http://localhost:3000/api/spaces_rented");
-        const allRentedSpaces = await rentedResponse.json();
-        const rentedSpaces = allRentedSpaces.filter(space => space.user_rent === user.user_id);
-
-        console.log(rentedSpaces);
-
-        // Build user data
-        const userData = {
-            name: user.firstName + ' ' +  user.lastName,
-            email: user.email,
-            location: user.location,
-            profilePic: user.profilePic,
-            ownedSpaces: ownedSpaces.map(space => ({
-                id: space.id,
-                title: space.title,
-                location: space.neighborhood || "Unknown",
-                price: `C$ ${space.price}/${space.lease_time}`,
-                image: space.image
-            })),
-            rentedSpaces: rentedSpaces.map(space => ({
-                id: space.id,
-                title: space.title,
-                location: space.neighborhood || "Unknown",
-                rented_from: space.rented_from || "Unknown",
-                rented_to: space.rented_to || "Unknown",
-                price: `C$ ${space.price}/${space.lease_time}`,
-                rent_total: `Rent total C$ ${space.rent_total}`,
-                image: space.image
-            }))
-        };
-
-        console.log(userData.rentedSpaces);
-        // Fill user profile info
-        document.getElementById("user-name").textContent = userData.name;
-        document.getElementById("user-email").textContent = userData.email;
-        document.getElementById("user-location").textContent = userData.location;
-        document.querySelector(".profile-pic").src = userData.profilePic;
-
-        // Populate spaces
-        populateSpacesOwned("owned-spaces", userData.ownedSpaces);
-        populateSpacesRented("rented-spaces", userData.rentedSpaces);
-*/
     } catch (error) {
         console.error("Error loading user data:", error);
     }
 
+    // Function to populate owned spaces
     function populateSpacesOwned(containerId, spaces) {
         const container = document.getElementById(containerId);
         container.innerHTML = "";
@@ -154,15 +134,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                     <h4>${space.title}</h4>
                     <p>${space.location}</p>
                     <p><strong>${space.price}</strong></p>
-                </a>
+                </div>
             `;
             container.appendChild(spaceCard);
         });
     }
 
+    // Function to populate rented spaces
     function populateSpacesRented(containerId, spaces) {
         const container = document.getElementById(containerId);
-        container.innerHTML = "";
+        container.innerHTML = "";  // Clear existing content
         spaces.forEach(space => {
             const spaceCard = document.createElement("div");
             spaceCard.classList.add("space-card");
@@ -179,14 +160,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
-
 });
 
-
+// Function to open space details page
 function openSpaceDetails(spaceId) {
     window.location.href = `space_details.html?id=${spaceId}`;
 }
-
 
 document.querySelector(".add-new-btn").addEventListener("click", function () {
     window.location.href = "space_manage.html";

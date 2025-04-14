@@ -2,9 +2,9 @@
 
 .container {
     display: flex;
-    flex-direction: column; /* empilha .main-content e .map-container */
+    flex-direction: column; /* stack .main-content and .map-container */
     padding: 50px;
-    position: relative; /* para que .form_dates fique posicionado corretamente */
+    position: relative; /* so that .form_dates is positioned correctly */
   }
 
 
@@ -12,52 +12,52 @@
 .space-content {
     display: flex;
     gap: 30px;
-    align-items: flex-start; /* ← ESSENCIAL: alinha os filhos ao topo */
+    align-items: flex-start; /* ← ESSENTIAL: align children to top */
     text-align: left;
 }
 
 
 
 .space-content .details {
-    margin-bottom: 12px; /* Espaço abaixo do título */
+    margin-bottom: 12px; /* Space below the title */
 }
 
 
 .space-content p strong {
     /*display: inline-block;*/
-    width: 160px; /* Define um tamanho fixo para os títulos Distência entre os textos */
+    width: 160px; /* Sets a fixed size for titles Distance between texts */
 }
 
 
-/* Estilização da galeria de imagens */
+/* Image gallery styling */
 .image-gallery {
     display: flex;
-    flex-direction: row; /* ← isso empilha imagem + miniaturas */
+    flex-direction: row; /* ← this stacks image + thumbnails */
     align-items: top;
     gap: 15px;
 }
 
-/* Imagem principal */
-/* Estilização da imagem principal */
+/* Main image */
+/* Styling of the main image */
 #space-image {
-    width: 100%; /* Responsivo */
-    max-width: 300px; /* Largura máxima */
-    max-height: 300px; /* Altura máxima */
-    aspect-ratio: 1/1; /* Mantém um formato quadrado */
-    object-fit: cover; /* Garante que a imagem preencha o quadrado sem distorção */
-    border-radius: 8px; /* Cantos arredondados */
+    width: 100%; /* Responsive */
+    max-width: 300px;
+    max-height: 300px;
+    aspect-ratio: 1/1; /* Maintains a square format */
+    object-fit: cover; /* Ensures the image fills the square without distortion */
+    border-radius: 8px; 
     transition: 0.3s ease-in-out;
 }
 
-/* Responsividade: Ajusta para telas menores */
+/* Responsiveness: Adjusts for smaller screens */
 @media (max-width: 500px) {
     #space-image {
-        max-width: 300px; /* Diminui o tamanho em telas pequenas */
+        max-width: 300px; /* Decrease size on small screens */
         max-height: 300px;
     }
 }
 
-/* Miniaturas */
+/* Thumbnails */
 .thumbnail-container {
     display: flex;
     flex-direction: column;
@@ -79,7 +79,7 @@
 
 
 
-/* Ícones das amenities */
+/* Amenities icons */
 .icon {
     width: 24px;
     height: 24px;
@@ -103,17 +103,17 @@
 
 
 
-/* Estilização do Book Space */
+/* Book Space Styling */
 .form_dates {
-    position: absolute; /* Fixa em um ponto da tela, acima dos outros elementos */
-    top: 50px; /* Distância do topo */
-    right: 50px; /* Distância da direita */
+    position: absolute; /* Fixed at a point on the screen, above the other elements */
+    top: 50px; /* Distance from top */
+    right: 50px; /* Distance from right */
     background: #ffffffe8;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0px 4px 10px #00000033; /* Sombreamento */
-    z-index: 1000; /* Garante que fique acima dos outros elementos */
-    width: 30%; /* Responsivo */
+    box-shadow: 0px 4px 10px #00000033; /* Shading */
+    z-index: 1000; /* Ensures it is above other elements */
+    width: 30%; /* Responsive */
 }
 
 
@@ -121,7 +121,7 @@
 .calendar-input {
     width: 80%;
     height: 30px;
-    line-height: 2.3; /* Ajusta o espaçamento entre as linhas dentro do parágrafo */    
+    line-height: 2.3; /* Adjusts the spacing between lines within the paragraph */  
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -129,23 +129,23 @@
 
 /* Define the style for occupied dates */
 .occupied {
-    background-color: #ff4d4d !important; /* Cor vermelha para as datas ocupadas */
+    background-color: #ff4d4d !important; /* Red color for occupied dates */
     color: white;
     border-radius: 50%;
-    cursor: not-allowed; /* Impede a interação com as datas */
+    cursor: not-allowed; /* Prevents interaction with dates */
 }
 
 .flatpickr-day.disabled {
-    background-color: #ccc !important; /* Cor de fundo para as datas desabilitadas */
-    cursor: not-allowed; /* Impede a interação */
+    background-color: #ccc !important; /* Background color for disabled dates */
+    cursor: not-allowed; /* Prevents interaction */
 }
 
 
 
-/* Estilização do botão de confirmação */
+/* Confirm button styling */
 .confirm-btn {
     width: 100%;
-    background: #ff385c; /* Cor vermelha estilo Airbnb */
+    background: #ff385c;/* Airbnb style red color */
     color: white;
     padding: 12px;
     border: none;
@@ -158,7 +158,7 @@
 }
 
 .confirm-btn:hover {
-    background: #d02d4e; /* Cor mais escura ao passar o mouse */
+    background: #d02d4e; /* Darker color on mouseover */
 }
 
 

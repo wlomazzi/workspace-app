@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
     flatpickr("#date-range", {
-        mode: "range", // Permite selecionar um intervalo de datas
-        dateFormat: "M j, Y", // Formato do texto exibido
-        minDate: "today", // Não permite selecionar datas passadas
-        showMonths: 2 // Exibe dois meses lado a lado
+        mode: "range", // Allows you to select a date range
+        dateFormat: "M j, Y", // Format of displayed text
+        minDate: "today", // Does not allow selecting past dates
+        showMonths: 2 // Displays two months side by side
     });
 });

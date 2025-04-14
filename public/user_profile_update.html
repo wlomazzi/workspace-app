@@ -18,11 +18,11 @@
             <input type="file" id="fileInput" style="display: none;" />
 
             <div class="user-details">
-                <label for="firstName">First Name:</label>
-                <input type="text" id="user-firstName" name="firstName">
+                <label for="firstName">Full Name:</label>
+                <input type="text" id="user-fullName" name="fullName">
                 
-                <label for="lastName">Last Name:</label>
-                <input type="text" id="user-lastName" name="lastName">
+                <label for="email">Phone number:</label>
+                <input type="text" id="user-phone" placeholder="(999) 999-9999" />
                 
                 <label for="email">Email:</label>
                 <input type="email" id="user-email" name="email">
@@ -30,6 +30,23 @@
                 <label for="location">Location:</label>
                 <input type="text" id="user-location" name="location">
                 
+                <!-- Line after Location field -->
+                <hr>
+                <!-- Owner and Coworker selection -->
+                <div class="role-selection">
+                    <label>
+                        <input type="checkbox" id="is_coworker" name="is_coworker">
+                        <span>Coworker</span>
+                    </label>
+                    <label>
+                        <input type="checkbox" id="is_owner" name="is_owner">
+                        <span>Owner</span>
+                    </label>
+                </div>
+
+                <!-- Message below checkboxes -->
+                <div id="message" style="margin-top: 20px; color: #ff00009a;"></div>                
+
                 <button class="update-btn" id="updateProfile">Update Profile</button>
             </div>
         </div>

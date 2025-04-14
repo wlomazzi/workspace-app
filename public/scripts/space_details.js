@@ -51,6 +51,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Get all images and generate thumbnails and default image
     generateImages(spaceData);
 
+    let spaceType = '';
+    if (spaceData.type==='meeting_room'){
+        spaceType = 'Meeting Room';
+    }else if (spaceData.type==='private_office'){
+        spaceType = 'Private Office';
+    }else if (spaceData.type==='open_desk'){
+        spaceType = 'Open Desk';
+    }
+
 
     // Get all data from the space and display in the HTML
     document.getElementById("space-title").textContent = spaceData.title;
@@ -59,12 +68,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("space-lease").textContent = spaceData.lease_time;
     document.getElementById("space-neighborhood").textContent = spaceData.neighborhood;
     document.getElementById("space-seats").textContent = spaceData.workspace_seats || spaceData.seats;
-    document.getElementById("space-type").textContent = spaceData.type;
-    document.getElementById("space-rating").innerHTML = `${getStars(spaceData.rating)} (${spaceData.rating})`;
+    document.getElementById("space-type").textContent  = spaceType;
+    document.getElementById("space-rating").innerHTML  = `${getStars(spaceData.rating)} (${spaceData.rating})`;
 
     // Store the lease type and price for later use in the calendar
     calendarLeaseType = spaceData.lease_time;
     calendarPrice = parseFloat(spaceData.price);
+
+    //console.log('spaceData:', spaceData); // Debug data
 
     // Defining the icons for each amenity
     const amenityIcons = {
@@ -73,7 +84,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         amn_public_transport: '<img src="/images/icon-public-transport.png" alt="Public Transport" class="icon">',
         amn_wifi: '<img src="/images/icon-wifi.png" alt="Wi-Fi" class="icon">',
         amn_printer: '<img src="/images/icon-printer.png" alt="Printer" class="icon">',
-        amn_air: '<img src="/images/icon-air-conditioner.png" alt="Air Conditioning" class="icon">'
+        amn_air: '<img src="/images/icon-air-conditioner.png" alt="Air Conditioning" class="icon">',
+        amn_smoking: '<img src="/images/icon-smoke.png" alt="Smoking" class="icon">'
     };
 
     // Checking if the spaceData object has the keys defined in amenityIcons and if the value is true, then create the icon element
@@ -308,7 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (form) {
         form.addEventListener("submit", function (event) {
-            event.preventDefault(); // impede o envio padrão do form
+            event.preventDefault(); // prevents the default form submission
 
             // Check if user is logged in
             if (!user) {

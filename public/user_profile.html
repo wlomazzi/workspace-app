@@ -21,6 +21,7 @@
                 <div class="user-details">
                     <h2 id="user-name"></h2>
                     <p id="user-email"></p>
+                    <p id="user-phone"></p>
                     <p id="user-location"></p>
                     <button class="edit-btn" onclick="window.location.href='user_profile_update.html';">Edit Profile</button>
 
@@ -28,15 +29,15 @@
             </div>
             
             <!-- Owned Spaces Section -->
-            <div class="spaces-section">
+            <div class="owner-spaces-section">
                 <h3>Work4Fun - your spaces available</h3>
                 <button class="add-new-btn">Add new space</button><br><br>
                 <div id="owned-spaces" class="spaces-list"></div>
             </div>
+            <hr class="owner-line" style="border: 1px solid #ccc; margin: 20px 0;">
 
-            <hr style="border: 1px solid #ccc; margin: 20px 0;">
             <!-- Rented Spaces Section -->
-            <div class="spaces-section">
+            <div class="coworker-spaces-section">
                 <h3>Work4Fun - spaces rented by you</h3><br>
                 <div id="rented-spaces" class="spaces-list"></div>
             </div>

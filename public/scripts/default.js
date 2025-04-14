@@ -4,13 +4,14 @@ const user = localStorage.getItem('user_id');  // Get the user ID from localStor
 async function fetchAndDisplayWorkspaces() {
     try {
         const response = await fetch('/api/spaces/workspaces'); // Call the API to get the workspaces data
-        const spaces = await response.json();  // Convert the response to JSON
+        const spaces   = await response.json();  // Convert the response to JSON
 
         displaySpaces(spaces);  // Call the function to display the spaces on the page
     } catch (error) {
         console.error("Erro ao buscar dados dos workspaces:", error);
     }
 }
+
 
 // Function to filter the spaces based on the search criteria
 function displaySpaces(spaces) {
@@ -22,6 +23,8 @@ function displaySpaces(spaces) {
         spaceElement.classList.add("space");
 
         spaceElement.setAttribute("onclick", `openSpaceDetails('${space.id}')`);
+
+        //console.log('space',space); // debug data
         spaceElement.innerHTML = `
             <img src="${space.image_01}" alt="${space.title}">
             <p><strong>${space.title}</strong></p>
@@ -37,6 +40,7 @@ function displaySpaces(spaces) {
                 ${space.amn_wifi ? '<img src="/images/icon-wifi.png" alt="Wifi" class="icon">' : ""}
                 ${space.amn_printer ? '<img src="/images/icon-printer.png" alt="Printer" class="icon">' : ""}
                 ${space.amn_air ? '<img src="/images/icon-air-conditioner.png" alt="Air Conditioning" class="icon">' : ""}
+                ${space.amn_smoking ? '<img src="/images/icon-smoke.png" alt="Smoking" class="icon">' : ""}
             </p>
         `;
         
@@ -44,29 +48,10 @@ function displaySpaces(spaces) {
     });
 }
 
-// Load the workspaces when the page is loaded
-window.onload = fetchAndDisplayWorkspaces;
 
-function getStars(rating) {
-    const maxStars = 5; // Máximo de estrelas
-    const fullStar = "⭐"; // Estrela cheia
-    const emptyStar = "☆"; // Estrela vazia
-
-    //Convert rating to a number and round it
-    const roundedRating = Math.round(rating); 
-
-    // Generate the star rating string
-    return fullStar.repeat(roundedRating) + emptyStar.repeat(maxStars - roundedRating);
-}
-
-function openSpaceDetails(spaceId) {
-    alert("Space ID: " + spaceId); // For debugging purposes
-    window.location.href = `space_details.html?id=${spaceId}`;
-}
-
-
-
-// SEARCH BAR - // Create and display a shadowed container with icons and search items instead of the title Featured Coworking Spaces
+/* SEARCH BAR
+// Create and display a shadowed container with icons and search items instead of the title Featured Coworking Spaces
+*/
 const featuredSection = document.querySelector(".search");
 if (featuredSection) {
     featuredSection.innerHTML = `
@@ -99,9 +84,8 @@ if (featuredSection) {
     `;
 }
 
-
-// FILTER FORM: Activated when click on filter icon
-// Function o show the filter form when clicking the filter icon - on Search bar 
+/* FILTER FORM: Activated when click on filter icon
+// Function o show the filter form when clicking the filter icon - on Search bar */
 document.addEventListener("DOMContentLoaded", function() {
     const filterIcon = document.getElementById("filter-icon");
     
@@ -116,19 +100,21 @@ document.addEventListener("DOMContentLoaded", function() {
                     <h3>Filters</h3>
                     
                     <div class="filter-group">
-                        <label for="price-range">Price Range: <span id="price-range-value">20</span></label>
-                        <input type="range" id="price-range" min="10" max="300" step="10" value="20" oninput="document.getElementById('price-range-value').textContent = this.value;">                        
+                        <label for="price-range-min">$ Range (min): <span id="price-range-value-min">20</span></label>
+                        <input type="range" id="price-range-min" min="10" max="300" step="10" value="20" oninput="document.getElementById('price-range-value-min').textContent = this.value;"><br>
+                        <label for="price-range-max">$ Range (max): <span id="price-range-value-max">2000</span></label>
+                        <input type="range" id="price-range-max" min="10" max="2000" step="5" value="2000" oninput="document.getElementById('price-range-value-max').textContent = this.value;">                        
                     </div>
                     <div class="filter-group">
                         <br>
-                        <label for="amenities">Amenities</label>
                         <div class="checkbox-group">
                             <input type="checkbox" id="parking"> <label for="parking">Parking</label><br>
                             <input type="checkbox" id="public_transport"> <label for="public_transport">Public Transport</label><br>
                             <input type="checkbox" id="kitchen"> <label for="kitchen">Coffee/Kitchen</label><br>
                             <input type="checkbox" id="wifi"> <label for="wifi">WiFi</label><br>
                             <input type="checkbox" id="printer"> <label for="printer">Printer</label><br>
-                            <input type="checkbox" id="air_conditioning"> <label for="air_conditioning">Air Conditioning</label>
+                            <input type="checkbox" id="air_conditioning"> <label for="air_conditioning">Air Conditioning</label><br>
+                            <input type="checkbox" id="smoke"> <label for="smoke">Smoking</label>
                         </div>
                     </div>
                     
@@ -137,10 +123,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         <label for="location-type">Location Type</label>
                         <select id="location-type">
                             <option value="all">All</option>
-                            <option value="open_space">Open Space</option>
-                            <option value="private_office">Private Office</option>
-                            <option value="shared_desk">Shared Desk</option>
                             <option value="meeting_room">Meeting Room</option>
+                            <option value="private_office">Private Office</option>
+                            <option value="open_desk">Open Desk</option>
                         </select>
                     </div>
                     
@@ -148,6 +133,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         <br>
                         <label for="rating">Rating</label>
                         <select id="rating">
+                            <option value="0">All</option>
                             <option value="1">1 Star</option>
                             <option value="2">2 Stars</option>
                             <option value="3">3 Stars</option>
@@ -191,223 +177,149 @@ document.addEventListener("click", function(event) {
 });
 
 
-/*
-// Função para enviar o ID do usuário para o servidor
-async function sendSessionData() {
-    const userId = localStorage.getItem('user_id');  // Obtém o ID do usuário do localStorage
 
+// SEARCH BAR BUTTON - Executed when the user click on the Search button
+document.querySelector('button').addEventListener('click', async function () {
+    // Pegando os valores dos campos de filtro
+    const location = document.getElementById('location').value.trim();
+    const checkIn  = document.getElementById('check-in').value;
+    const checkOut = document.getElementById('check-out').value;
+    const teamSize = document.getElementById('team-size').value;
+
+    const user = JSON.parse(sessionStorage.getItem("loggedUser"));
+    /*
+    if (!user) {
+        alert("Please log in to search for spaces.");
+        return;
+    }
+    */
+    const filters = {
+        location,
+        check_in: checkIn,
+        check_out: checkOut,
+        team_size: teamSize
+    };
+
+    // Enviando os filtros para o backend via POST
     try {
-        const response = await fetch('/api/users/user_login/session', {
-            method: 'POST',
+        const response = await fetch("/api/spaces/workspaces/filter_spaces", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                user_id: userId,  // Passa o user_id no corpo da requisição
-            }),
+            body: JSON.stringify(filters)
         });
 
-        const data = await response.json();
+        const result = await response.json();
 
-        // Obtém o nome e o avatar do usuário
-        const userName  = data.full_name;
-        const avatarUrl = data.avatar_url;
-
-        // Atualiza o nome do usuário
-        const userNameElement = document.getElementById('user-session-name');
-        if (userNameElement) {
-            userNameElement.textContent = userName;  // Define o nome do usuário no HTML
-        }
-
-        // Atualiza a imagem do perfil do usuário
-        const userProfilePicElement = document.querySelector('user-session-profile-pic');
-        if (userProfilePicElement) {
-            userProfilePicElement.src = avatarUrl;  // Define o URL da imagem do perfil
-            userProfilePicElement.alt = userName;  // Define o texto alternativo com o nome do usuário
-        }        
-
-        if (response.ok) {
-            console.log('Dados da sessão enviados com sucesso:', data);
+        if (result.error) {
+            alert(`Error: ${result.error}`);
         } else {
-            console.error('Erro ao enviar dados da sessão:', data);
+            //console.log(result); // Displays the filtered workspaces in the console
+            displaySpaces(result);  // Call the function to display the spaces on the page
+            // Here you can display the filtered workspaces on the screen
         }
     } catch (error) {
-        console.error('Erro na requisição:', error);
+        console.error('Error filtering spaces:', error);
+        alert('Error while filtering workspaces.');
     }
-}
-
-if (user) {
-    sendSessionData();
-}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-document.addEventListener("DOMContentLoaded", () => {
-    fetchSpaces();
 });
 
 
-// Update json data dynamically
-function updateSpaces(newData) {
-    fetch("http://localhost:3000/api/spaces", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(newData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-        fetchSpaces(); // Reload spaces after updating
-    })
-    .catch(error => console.error("Error updating data:", error));
-}
-
-
-
-
-
-
-
-
-
-
-// Function to filter the spaces by the search bar
-// The function will be triggered when clicking the Search button
-document.addEventListener("DOMContentLoaded", () => {
-    fetchSpaces();
-    document.querySelector(".search-bar button").addEventListener("click", filterSpaces);
-});
-
-function fetchSpaces() {
-    fetch("http://localhost:3000/api/spaces")
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            displaySpaces(data);
-        })
-        .catch(error => console.error("Error fetching data:", error));
-}
 
 
 // Function to filter spaces based on selected criteria
-function filterSpaces() {
-    const neighborhoodInput = document.getElementById("location").value.trim().toLowerCase();
-    const checkInDate  = document.getElementById("check-in").value;
-    const teamSize     = document.getElementById("team-size").value;
+// This form is executed when the user confirm the filter on the FORM FILTER
+async function filterSpaces() {
 
     //Get the filter from the Filter Form --------------------------------------------------------------------------------------------------------------
     const filterForm = document.getElementById("filter-form");
-    
-    fetch("http://localhost:3000/api/spaces")
-        .then(response => response.json())
-        .then(data => {
+    // Getting the values ​​from the filter fields
+    const location = document.getElementById('location').value.trim();
+    const checkIn  = document.getElementById('check-in').value;
+    const checkOut = document.getElementById('check-out').value;
+    const teamSize = document.getElementById('team-size').value;
 
-            const filteredSpaces = data.filter(space => {
-                const matchNeighborhood = space.neighborhood.toLowerCase().includes(neighborhoodInput);
-                const matchTeamSize     = space.workspace_seats ? space.workspace_seats >= teamSize : true;
-                const matchCheckIn = !checkInDate || (space.available_from && new Date(space.available_from) >= new Date(checkInDate));
+    // Minimum and maximum price
+    const priceMin = document.getElementById('price-range-min').value;
+    const priceMax = document.getElementById('price-range-max').value;
 
+    // Amenities (checkboxes) - Individual, rather than an object
+    const parking = document.getElementById('parking').checked;
+    const publicTransport = document.getElementById('public_transport').checked;
+    const kitchen = document.getElementById('kitchen').checked;
+    const wifi = document.getElementById('wifi').checked;
+    const printer = document.getElementById('printer').checked;
+    const airConditioning = document.getElementById('air_conditioning').checked;
+    const smoke = document.getElementById('smoke').checked;
 
-                if (filterForm){
-                    const capacity = parseInt(filterForm.querySelector("#capacity")?.value) || null;
-                    const priceRange = parseFloat(filterForm.querySelector("#price-range")?.value) || null;
-                    const locationType = filterForm.querySelector("#location-type")?.value || "";
-                    const rating = parseInt(filterForm.querySelector("#rating")?.value) || null;
+    // Location type
+    const locationType = document.getElementById('location-type').value;
 
-                    const matchPriceRange   = space.price ? space.price >= priceRange : true;
-                    const matchCapacity     = space.workspace_seats ? space.workspace_seats >= capacity : true;
-                    const matchLocationType = space.type ? space.type === locationType || locationType === "all": true;
-                    const matchRating       = space.rating ? space.rating >= rating : true;
+    // Rating
+    const rating = document.getElementById('rating').value;
 
-                    
-                    let matchAmenities = true;
-                    const selectedAmenities = Array.from(filterForm.querySelectorAll(".checkbox-group input[type='checkbox']:checked"))
-                    .map(checkbox => checkbox.id);
-            
-                    //console.log("Selected Amenities:", selectedAmenities);
-                    if (selectedAmenities.length === 0) {
-                        matchAmenities = true; // No filter applied
-                    }else{
-                        for (let amenity of selectedAmenities) {
-                            //console.log('amenity: ' + amenity + ' space.amenities[amenity]: ' + space.amenities[amenity]);
-                            if (!space.amenities[amenity]) {
-                                matchAmenities = false;
-                                break;
-                            }
-                        }
-                    }
+    const filters = {
+        location: location,
+        check_in: checkIn,
+        check_out: checkOut,
+        team_size: teamSize,
+        price_min: priceMin,
+        price_max: priceMax,
+        amn_kitchen: kitchen,
+        amn_parking: parking, 
+        amn_public_transport: publicTransport,
+        amn_wifi: wifi,
+        amn_printer: printer,
+        amn_air: airConditioning,
+        amn_smoking: smoke,
+        location_type: locationType,
+        rating: rating
+    };
 
-                    return matchNeighborhood && matchTeamSize && matchCheckIn && matchPriceRange && matchCapacity && matchLocationType && matchRating && matchAmenities;
-                    
-                }else{
-                    console.log(' checkInDate : ' + checkInDate + ' space.available_to: ' + space.available_from);
-                    return matchNeighborhood && matchTeamSize && matchCheckIn;
-                }
-                
-            });
-            
-            if (filteredSpaces.length === 0) {
-                displayNoResults();
-            } else {
-                displaySpaces(filteredSpaces);
-            }
-        })
-        .catch(error => console.error("Error filtering data:", error));
+    // Sending filters to the backend via POST
+    try {
+        const response = await fetch("/api/spaces/workspaces/filter_spaces", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(filters)
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+            alert(`Error: ${result.error}`);
+        } else {
+            //console.log(result); // Displays the filtered workspaces in the console
+            displaySpaces(result);  // Call the function to display the spaces on the page
+            // Here we can display the filtered workspaces on the screen
+        }
+    } catch (error) {
+        console.error('Error filtering spaces:', error);
+        alert('Error while filtering workspaces.');
+    }    
+
 }
 
 
 
 
-function displaySpaces(spaces) {
-    const spacesContainer = document.querySelector(".spaces");
-    spacesContainer.innerHTML = "";
-
-    spaces.forEach(space => {
-        const spaceElement = document.createElement("div");
-        spaceElement.classList.add("space");
-
-        spaceElement.setAttribute("onclick", `openSpaceDetails('${space.id}')`);
-        spaceElement.innerHTML = `
-            <img src="${space.image}" alt="${space.title}">
-            <p><strong>${space.title}</strong></p>
-            <p style="color:#969494;">${space.neighborhood}</p>
-            <p><strong>C$ ${space.price}</strong> ${space.lease_time}</p>
-            <p>Seats 👤: ${space.workspace_seats}</p>
-            <p>Rating: ${getStars(space.rating)} (${space.rating})</p>
-            <hr>
-            <p>
-                ${space.amenities.parking ? '<img src="/images/icon-parking.png" alt="Parking" class="icon">' : ""}
-                ${space.amenities.public_transport ? '<img src="/images/icon-public-transport.png" alt="Public transport?" class="icon">' : ""}
-                ${space.amenities.kitchen ? '<img src="/images/icon-kitchen.png" alt="Kitchen/Cafee" class="icon">' : ""}
-                ${space.amenities.wifi ? '<img src="/images/icon-wifi.png" alt="Wifi" class="icon">' : ""}
-                ${space.amenities.printer ? '<img src="/images/icon-printer.png" alt="Printer" class="icon">' : ""}
-                ${space.amenities.air_conditioning ? '<img src="/images/icon-air-conditioner.png" alt="Air Conditioning" class="icon">' : ""}
-            </p>
-        `;
-                
-        spacesContainer.appendChild(spaceElement);
-    });
+function getStars(rating) {
+    const maxStars = 5; // Maximum stars
+    const fullStar = "⭐"; // Full star
+    const emptyStar = "☆"; // Empty star
+    // Convert the rating to a number
+    const roundedRating = Math.round(rating); 
+    // Generates the stars
+    return fullStar.repeat(roundedRating) + emptyStar.repeat(maxStars - roundedRating);
 }
 
 
-
-
-
+function openSpaceDetails(spaceId) {
+    window.location.href = `space_details.html?id=${spaceId}`;
+}
   
 
 //<p>Rating: ${space.rating}</p>
@@ -415,4 +327,7 @@ function displayNoResults() {
     const spacesContainer = document.querySelector(".spaces");
     spacesContainer.innerHTML = `<p class="no-results">No coworking spaces found with the selected filters.</p>`;
 }
-*/
+
+
+// Load the workspaces when the page is loaded
+window.onload = fetchAndDisplayWorkspaces;

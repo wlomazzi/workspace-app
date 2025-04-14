@@ -1,4 +1,4 @@
-/* Reset básico */
+/* Basic Reset */
 * {
     margin: 0;
     padding: 0;
@@ -77,7 +77,7 @@
     position: absolute;
     right: 10px;
     top: 50px;
-    z-index: 9999; /* valor bem alto para garantir que fique sobreposto */
+    z-index: 9999; /* very high value to ensure it overlaps */
     background: white;
     box-shadow: 0px 4px 6px #0000001a;
     border-radius: 5px;

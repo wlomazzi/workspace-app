@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config();  // Carrega as variáveis de ambiente do arquivo .env
+dotenv.config();  // Load environment variables from the .env file
 
 
 // Importando a nova API
@@ -26,7 +26,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Mounting the routes from workspaces.js at the path '/api/spaces/workspaces'
 app.use('/api/spaces/workspaces', workspacesRouter);
-app.use('/api/spaces/workspaces/filter', workspacesRouter);
 app.use('/api/users/user_login', loginRouter);  // Mounting the routes from login.js at the path '/api/users/login'
 //app.use('/api/users/user_login/logout', loginRouter);  // Mounting the routes from login.js at the path '/api/users/login/logout'
 //app.use('/api/users/user_login/session', loginRouter);  // Mounting the routes from login.js at the path '/api/users/login/logout'
@@ -37,29 +36,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve the index.html file from the public folder
 });
 
-
-
-/*
-app.get('/workspaces', async (req, res) => {
-  try {
-    const { data, error } = await supabase.from('workspaces').select('*');
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
-
-    // Envia os dados como JSON para a página
-    res.json(data);
-  } catch (error) {
-    console.error('Erro ao buscar dados:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-*/
-
-
-
-
-// Inicia o servidor na porta definida
+// Start the server on the defined port
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

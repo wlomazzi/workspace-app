@@ -1,251 +1,289 @@
-
 // Function to get the user session
 const user = JSON.parse(sessionStorage.getItem("loggedUser"));
 let latitude  = 0;
 let longitude = 0;
 
 
-// START INSERT or UPDATE the space *********************************************************************************************************/
-document.addEventListener("DOMContentLoaded", async function() {
-    const spaceId = new URLSearchParams(window.location.search).get('space_id'); // Get space_id from URL
-    
-    // [ INSERT ]
-    if (!spaceId) {
-        // We are creating a new space, so the form is empty
-        // Change button text to "Update Space" and the H2 text to "Edit space for work"
-        document.querySelector("button[type='submit']").textContent = "Add New Space";
-        document.querySelector("h2").textContent = "Add a New Space";
 
-        // Handle form submission for creating new space
-        document.getElementById("spaceForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            createSpace();
-        });        
-    }else{
-        // [ UPDATE ]
-        try {
+document.addEventListener("DOMContentLoaded", async function () {
+    const spaceId = new URLSearchParams(window.location.search).get('space_id');  // Get space_id from URL
 
-            // Change button text to "Update Space" and the H2 text to "Edit space for work"
-            document.querySelector("button[type='submit']").textContent = "Update Space";
-            document.querySelector("h2").textContent = "Edit space for work";
+    // Seleciona todas as imagens (thumbnails) clicáveis
+    const imageBoxes = document.querySelectorAll(".image-box");
 
-            // Fetch the spaces data (assuming it's stored in a local file or endpoint)
-            const response  = await fetch("http://localhost:3000/api/spaces");  // Your API endpoint to fetch spaces data - GET Space data
-            const allSpaces = await response.json();
-    
-            // Find the space by space_id
-            const space = allSpaces.find(space => space.id === parseInt(spaceId)); // Ensure you compare using the correct type (int or string)
-            
-            if (!space) {
-                alert("Space not found.");
-                return;
+    imageBoxes.forEach((box, index) => {
+        const imageInput = document.getElementById(`imageInput${index + 1}`);
+        const image = document.getElementById(`image${index + 1}`);
+        
+        // Torna a imagem clicável
+        image.addEventListener("click", function() {
+            // Aciona o input file clicando na imagem
+            imageInput.click();
+        });
+
+        // Manipula a seleção de arquivos no input
+        imageInput.addEventListener("change", function(event) {
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    // Substitui a imagem do thumbnail pela imagem selecionada
+                    image.src = reader.result;
+                    image.style.display = "block"; // Torna a imagem visível
+                };
+                reader.readAsDataURL(file); // Lê a imagem como base64
             }
-
-            // Only one result — use directly
-            latitude  = parseFloat(space.latitude);
-            longitude = parseFloat(space.longitude);
-
-            // Populate the form with the data from the space
-            document.getElementById("title").value = space.title;
-            document.getElementById("details").value = space.details;
-            document.getElementById("price").value = space.price;
-            document.getElementById("address").value = space.address;
-            document.getElementById("neighborhood").value = space.neighborhood;
-            document.getElementById("workspace_seats").value = space.workspace_seats;
-            document.getElementById("type").value = space.type;
-            document.getElementById("lease_time").value = space.lease_time;
-            document.getElementById("available_from").value = space.available_from;
+        });
+    });
     
-            // Set amenities checkboxes
-            document.getElementById("kitchen").checked = space.amenities.kitchen;
-            document.getElementById("parking").checked = space.amenities.parking;
-            document.getElementById("public_transport").checked = space.amenities.public_transport;
-            document.getElementById("wifi").checked = space.amenities.wifi;
-            document.getElementById("printer").checked = space.amenities.printer;
-            document.getElementById("air_conditioning").checked = space.amenities.air_conditioning;
     
-            // If you have images, handle the image display
-            const imageInput = document.getElementById("images");
-            // You can pre-fill the images input if needed or handle it differently
-            // However, for security reasons, input fields like file inputs can't be populated by JS due to browser restrictions
-            console.log(space.image);
-
-            // Handle form submission for editing
-            document.getElementById("spaceForm").addEventListener("submit", function(event) {
-                event.preventDefault();
-                updateSpace(spaceId);
-            });            
-
-
-        } catch (error) {
-            console.error("Error loading space data:", error);
-        }        
+    if (!spaceId) {
+        if (!user){
+            alert("Insert not allowed. User not loged in.");
+            window.location.href = "/login.html"; // Redirect to login page
+        }else{
+            document.querySelector("h2#form-title").textContent = "Insert Workspace";
+            document.querySelector("button[type='submit']").textContent = "Insert Workspace";
+            populateImages('none');  // Assuming workspace is an array and we're fetching the first object
+        }
+        return;
+    }else{
+        document.querySelector("h2#form-title").textContent = "Edit Workspace";
+        document.querySelector("button[type='submit']").textContent = "Update Workspace";
     }
 
+    // Fetch workspace data from the API using the spaceId
+    try {
+
+        const response = await fetch(`/api/spaces/workspaces?id=${spaceId}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch workspace data: ${response.statusText}`);
+        }
+
+        const workspaceData = await response.json();
+
+        if (workspaceData.length === 0) {
+            alert("Workspace not found.");
+            return;
+        }
+        
+        // Populate the form with the fetched data
+        const workspace = workspaceData[0];  // Assuming the response returns an array with one object
+        //console.log('workspace:',workspace); debug JSON return
+
+        // Populate text fields
+        document.getElementById("title").value = workspace.title;
+        document.getElementById("details").value = workspace.details;
+        document.getElementById("price").value = workspace.price;
+        document.getElementById("lease_time").value = workspace.lease_time;
+        document.getElementById("workspace_seats").value = workspace.seats;
+        document.getElementById("address").value = workspace.address;
+        document.getElementById("neighborhood").value = workspace.neighborhood;
+        document.getElementById("available_from").value = workspace.available_from;
+
+        latitude  = workspace.latitude;
+        longitude = workspace.longitude;
+        
+        // Populate amenities (checkboxes)
+        document.getElementById("amn_kitchen").checked = workspace.amn_kitchen;
+        document.getElementById("amn_parking").checked = workspace.amn_parking;
+        document.getElementById("amn_public_transport").checked = workspace.amn_public_transport;
+        document.getElementById("amn_wifi").checked = workspace.amn_wifi;
+        document.getElementById("amn_printer").checked = workspace.amn_printer;
+        document.getElementById("amn_air").checked = workspace.amn_air;
+        document.getElementById("amn_smoking").checked = workspace.amn_smoking;
+
+        console.log('workspace',workspace);
+
+        // Populate images
+        if (workspace){
+            populateImages(workspace);  // Assuming workspace is an array and we're fetching the first object
+        } else {
+            console.error("Workspace not found");
+        }
+
+        // You can set additional fields or handle more image previews as needed
+    } catch (error) {
+        console.error("Error loading workspace data:", error);
+        alert("Failed to load workspace data.");
+    }
 });
 
 
-// Function to create a new space
-async function createSpace() {
 
-    // Description: This script is used to add a new space to the database.
-    document.getElementById("spaceForm").addEventListener("submit", async function(event) {
-        event.preventDefault();
+// Function to populate images from workspace data
+function populateImages(workspace) {
+    // Check if workspace has image URLs and set the src attributes for the thumbnails
 
-        console.log(user);
-        if (user) {
-            console.log("Logged in user: ", user.user_id, user.firstName);
-        } else {
-            // Redirect to login if not logged in
-            window.location.href = "login.html";
-        }
-
-        const formData = new FormData(this); // Create FormData to send files and text
-
-
-        event.preventDefault(); // Avoid automatic sending
-
-        const imageInput = document.getElementById("images");
-        const selectedFiles = imageInput.files;
-
-        // Check the number of images
-        if (selectedFiles.length === 0) {
-            alert("Please select at least one image.");
-            return;
-        }
-
-        // The usar can upload max 4 images
-        if (selectedFiles.length > 4) {
-            alert("You can upload a maximum of 4 images.");
-            return;
-        }
-
-        // Check the type or size of each image
-        for (let file of selectedFiles) {
-            if (!file.type.startsWith("image/")) {
-                alert("Only image files are allowed.");
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit per image 
-                alert(`Image ${file.name} is too large (max 5MB).`);
-                return;
-            }
-        }
-
-        // Add geographic coordinates
-        formData.append("latitude", latitude);
-        formData.append("longitude", longitude);
-        formData.append("user_id", user.user_id);
-
-
-        try {
-            // Call the api to add the data to JSON file / database 
-            const response = await fetch("http://localhost:3000/api/spaces", {
-                method: "POST",
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                alert("Space successfully added!");
-                window.location.href = "index.html";  // Redirect to index page
-            } else {
-                alert("Error inserting the Space: " + result.message);
-            }
-        } catch (error) {
-            console.error("Fetch error:", error);
-            alert("Failed to connect to the server. Please check your internet or server status.");
-        }
-    });
-
-}
-
-
-
-// Function to update an existing space
-async function updateSpace(spaceId) {
-    const formData = new FormData(document.getElementById("spaceForm"));  // Get the form data as FormData object
-    
-    // Add the spaceId into the form data (in case it's not already part of the form)
-    formData.append("id", spaceId); 
-
-    // Add geographic coordinates
-    formData.append("latitude", latitude);
-    formData.append("longitude", longitude);
-
-    // If the space has images, handle them as well
-    const imageInput = document.getElementById("images");
-    const selectedFiles = imageInput.files;
-
-    // Check if the user selected new images
-    if (selectedFiles.length > 0) {
-        // The form already includes the image files with FormData, so no need to modify further
-    } else {
-        // In case no new images are selected, make sure the existing images are retained in FormData
-        const existingImages = document.getElementById("existing-images").value;
-        formData.append("existing_images", existingImages);  // Include the existing images in the update if any
+    if (workspace.image_01) {
+        document.getElementById("image1").src = workspace.image_01;
+        document.getElementById("image1").style.display = "block";  // Make the image visible
+    }else{
+        document.getElementById("image1").src ='https://taeieijsgxjagfulbndt.supabase.co/storage/v1/object/public/workspaces/spaces/000.jpg';
+        document.getElementById("image1").style.display = "block";  // Make the image visible
     }
 
-    try {
-        // Send the form data (with images) to the server for updating
-        const response = await fetch("http://localhost:3000/api/spaces", {
-            method: "POST", // POST is used because the API logic decides whether to update or create
-            body: formData // Send the FormData containing both text data and images
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            alert("Space updated successfully!");
-            window.location.href = "index.html"; // Redirect to home page or dashboard after update
-        } else {
-            alert(result.message); // Show the error message from the server
-        }
-    } catch (error) {
-        console.error("Error updating space:", error);
-        alert("Failed to update space. Please try again later.");
+    if (workspace.image_02) {
+        document.getElementById("image2").src = workspace.image_02;
+        document.getElementById("image2").style.display = "block";
+    }else{
+        document.getElementById("image2").src ='https://taeieijsgxjagfulbndt.supabase.co/storage/v1/object/public/workspaces/spaces/000.jpg';
+        document.getElementById("image2").style.display = "block";  // Make the image visible
+    }
+    if (workspace.image_03) {
+        document.getElementById("image3").src = workspace.image_03;
+        document.getElementById("image3").style.display = "block";
+    }else{
+        document.getElementById("image3").src ='https://taeieijsgxjagfulbndt.supabase.co/storage/v1/object/public/workspaces/spaces/000.jpg';
+        document.getElementById("image3").style.display = "block";  // Make the image visible
+    }
+    if (workspace.image_04) {
+        document.getElementById("image4").src = workspace.image_04;
+        document.getElementById("image4").style.display = "block";
+    }else{
+        document.getElementById("image4").src ='https://taeieijsgxjagfulbndt.supabase.co/storage/v1/object/public/workspaces/spaces/000.jpg';
+        document.getElementById("image4").style.display = "block";  // Make the image visible
     }
 }
 
 
 
-// Function to gather the form data
-function getFormData() {
-    return {
+// Function to update the workspace data
+document.getElementById("spaceForm").addEventListener("submit", async function(event) {
+    event.preventDefault(); 
+
+    const spaceId = new URLSearchParams(window.location.search).get('space_id'); // Get the ID space from the URL
+    const user    = JSON.parse(sessionStorage.getItem("loggedUser"));  // Get the logged in user
+
+    if (!user) {
+        alert("You need to be logged in to update the workspace.");
+        return;
+    }
+
+    const updatedData = {
+        user_id: user.user_id,
+        space_id: spaceId,
         title: document.getElementById("title").value,
         details: document.getElementById("details").value,
         price: document.getElementById("price").value,
         address: document.getElementById("address").value,
         neighborhood: document.getElementById("neighborhood").value,
-        workspace_seats: document.getElementById("workspace_seats").value,
+        seats: document.getElementById("workspace_seats").value,
         type: document.getElementById("type").value,
         lease_time: document.getElementById("lease_time").value,
-        available_from: document.getElementById("available_from").value,
-        amenities: {
-            kitchen: document.getElementById("kitchen").checked,
-            parking: document.getElementById("parking").checked,
-            public_transport: document.getElementById("public_transport").checked,
-            wifi: document.getElementById("wifi").checked,
-            printer: document.getElementById("printer").checked,
-            air_conditioning: document.getElementById("air_conditioning").checked
-        },
-        // Add geographic coordinates
         latitude: latitude,
-        longitude: longitude
+        longitude: longitude,
+        available_from: document.getElementById("available_from").value,
+        amn_kitchen: document.getElementById("amn_kitchen").checked,
+        amn_parking: document.getElementById("amn_parking").checked,
+        amn_public_transport: document.getElementById("amn_public_transport").checked,
+        amn_wifi: document.getElementById("amn_wifi").checked,
+        amn_printer: document.getElementById("amn_printer").checked,
+        amn_air: document.getElementById("amn_air").checked,
+        amn_smoking: document.getElementById("amn_smoking").checked,
+
+        // Images should be passed as URLs, update them if new images are selected
+        image_01: document.getElementById("image1").src,
+        image_02: document.getElementById("image2").src,
+        image_03: document.getElementById("image3").src,
+        image_04: document.getElementById("image4").src
+        
     };
+
+    // Send the updated data to the backend
+    try {
+
+        let api_type = '';
+        if (spaceId && spaceId.trim() !== ""){
+            api_type = 'update';
+        }else{
+            api_type = 'insert';
+        }
+
+        const response = await fetch(`/api/spaces/workspaces/${api_type}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        console.log(`${api_type}Data: `, updatedData);
+
+        const result = await response.json();
+
+        if (result.success) {
+            console.log('result:',result);
+            alert("Workspace updated successfully.");
+            //window.location.href = "/workspace_details.html?space_id=" + spaceId;  // Redirect to the updated workspace page
+        } else {
+            alert("Failed to update workspace: " + result.error);
+        }
+    } catch (error) {
+        console.error("Error updating workspace:", error);
+        alert("An error occurred while updating the workspace.");
+    }
+});
+
+
+
+async function uploadImageToBackend(event, imageCode) {
+    const spaceId = new URLSearchParams(window.location.search).get('space_id');  // Get the space_id from the URL
+    const file    = event.target.files[0];  // Get the selected image file
+
+    if (!file || !spaceId) {
+        alert("Invalid file or space ID.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);  // Add the file to the request
+    formData.append("space_id", spaceId);  // Add the space_id
+    formData.append("image_code", imageCode);  // Add the image code (image_01, image_02, etc.)
+
+    try {
+        const response = await fetch("/api/spaces/workspaces/upload_image", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,  // If necessary, pass the token in the header
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            //alert("Image uploaded and workspace updated successfully!");
+            // Here we can update the image view or provide other feedback.
+        } else {
+            alert("Failed to upload image: " + result.message);
+        }
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("An error occurred while uploading the image.");
+    }
 }
-// END Functions: CREATE / UPDATE space **************************************************************************************************/
+
+// Attach the event listener for each image input
+document.getElementById("imageInput1").addEventListener("change", function(event) {
+    uploadImageToBackend(event, "image_01");  // Passa o código da imagem para o backend
+});
+document.getElementById("imageInput2").addEventListener("change", function(event) {
+    uploadImageToBackend(event, "image_02");
+});
+document.getElementById("imageInput3").addEventListener("change", function(event) {
+    uploadImageToBackend(event, "image_03");
+});
+document.getElementById("imageInput4").addEventListener("change", function(event) {
+    uploadImageToBackend(event, "image_04");
+});
 
 
 
 
-// Function called when the address field loses focus
+// Function called when the address field loses focus - This function is for LATITUDE and LONGITUDE data
 async function fetchCoordinatesFromAddress() {
     const addressInput = document.getElementById("address");
     const address = addressInput.value.trim();
@@ -315,11 +353,11 @@ async function fetchCoordinatesFromAddress() {
         list.appendChild(li);
     });
 
-    // Container dos botões
+    // Button container
     const buttonContainer = document.createElement("div");
     buttonContainer.className = "modal-buttons";
 
-    // Botão Confirmar
+    // Submit / Confirm button
     const confirmBtn = document.createElement("button");
     confirmBtn.textContent = "Confirm";
     confirmBtn.className = "modal-button";
@@ -355,13 +393,13 @@ async function fetchCoordinatesFromAddress() {
         closeAddressModal();
     };
 
-    // Botão Cancelar
+    // Cancel button
     const cancelBtn = document.createElement("button");
     cancelBtn.textContent = "Cancel";
     cancelBtn.className = "modal-button modal-cancel";
     cancelBtn.onclick = closeAddressModal;
 
-    // Adiciona os dois botões
+    // Add the two buttons
     buttonContainer.appendChild(cancelBtn);
     buttonContainer.appendChild(confirmBtn);
     list.appendChild(buttonContainer);
@@ -383,3 +421,5 @@ function extractNeighborhoodFromDisplayName(displayName) {
 function closeAddressModal() {
     document.getElementById("addressModal").style.display = "none";
 }
+
+

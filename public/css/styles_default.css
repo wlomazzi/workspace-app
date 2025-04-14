@@ -1,4 +1,4 @@
-/* Reset básico */
+/* Basic Reset */
 * {
     margin: 0;
     padding: 0;
@@ -16,16 +16,16 @@ body {
 .search-bar {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center; /* Centraliza os itens horizontalmente */
+    justify-content: center; /* Centers items horizontally */
     align-items: center;
     background: #fff;
     padding: 15px;
     gap: 15px;
     border-radius: 50px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    /*max-width: 85%; /* Define uma largura máxima */
+    /*max-width: 85%; /* Sets a maximum width */
     width: 75%;
-    margin: 20px auto; /* Centraliza horizontalmente e adiciona espaço acima */
+    margin: 20px auto; /* Center horizontally and add space above */
 }
 
 
@@ -113,18 +113,19 @@ body {
 /* END Search bar container - fields: Neighborhood, Check-in, Check-out, Team Size and Search button and left icons (filter, public transport and kitchen)  */
 
 
+
 /* Body section configuration ---------------------------------------------------------------------------- */
 #filter-form {
     position: absolute;
     top: 240px;
-    width: 100%; /* Para ocupar toda a largura do container */
-    max-width: 320px; /* Para limitar a largura */
+    width: 100%; /* To fill the entire width of the container */
+    max-width: 320px; /* To limit the width */
     background: white;
     padding: 20px;
     box-shadow: 0px 4px 8px #00000033;
     border-radius: 12px;
     font-size: 14px;
-    display: none; /* Inicialmente oculto */
+    display: none; /* Initially hidden */
 }
 
 

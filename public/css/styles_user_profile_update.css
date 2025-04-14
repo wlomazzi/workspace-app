@@ -29,6 +29,8 @@ body {
     gap: 20px;
     border-bottom: 2px solid #e0e0e0;
     padding-bottom: 20px;
+    border: none;
+    box-shadow: none;    
 }
 
 
@@ -50,7 +52,7 @@ body {
     flex-grow: 1;
 }
 
-/* Labels and Inputs */
+
 .user-details label {
     font-weight: bold;
     display: block;
@@ -66,7 +68,66 @@ body {
     font-size: 14px;
 }
 
-/* Update Button */
+hr {
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 20px 0;
+}
+
+
+
+
+/* Style of checkboxes transformed into buttons */
+.role-selection {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.role-selection label {
+    display: flex;
+    align-items: center;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.3s;
+    width: auto; /* Adjust to automatic width, based on text */
+    justify-content: center;
+    /*min-width: 120px; /* Ensures a minimum size for the button */
+    text-align: center; /* Center the text */
+}
+
+/* Hide the real checkbox */
+.role-selection input[type="checkbox"] {
+    display: none; 
+}
+
+/* Styling the span (the visual button) */
+.role-selection span {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    padding: 20px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+/* Appearance of the button when the checkbox is selected */
+.role-selection input[type="checkbox"]:checked + span {
+    background-color: #4CAF50;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Background color on mouseover */
+.role-selection label:hover span {
+    background-color: #e0e0e0;
+    transform: scale(1.05);
+}
+
+ /*Update Button*/
 .update-btn {
     width: 100%;
     background: #007bff;
@@ -82,6 +143,8 @@ body {
 .update-btn:hover {
     background: #0056b3;
 }
+
+
 
 /* Hover effect on inputs and button */
 .user-details input:hover {

@@ -9,8 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Insert the navbar HTML at the top of the body
             document.body.insertBefore(navbarContainer, document.body.firstChild);
 
-            const userId    = localStorage.getItem('user_id');  // Obtém o ID do usuário do localStorage
-            const userEmail = localStorage.getItem('user_email');  // Obtém o email do usuário do localStorage
+            const userId    = localStorage.getItem('user_id');  // Get the user ID from localStorage
+            const userEmail = localStorage.getItem('user_email');  // Get the user's email from localStorage
 
             if (userId) {
                 //alert("User is logged in, ID: " + userId);
@@ -21,17 +21,20 @@ document.addEventListener("DOMContentLoaded", function () {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            user_id: userId,  // Passa o user_id no corpo da requisição
+                            user_id: userId,  // Pass the user_id in the request body
                         }),
                     });
             
                     const data = await response.json();
             
-                    //console.log(data); // Aqui você pode ver os dados do usuário retornados pelo servidor
+                    //console.log(data); // Here you we see the user data returned by the server
 
-                    localStorage.setItem('user_picture',  data.profile.avatar_url);
+                    localStorage.setItem('user_picture' , data.profile.avatar_url);
                     localStorage.setItem('user_fullname', data.profile.full_name);
                     localStorage.setItem('user_location', data.profile.location);
+                    localStorage.setItem('user_phone'   , data.profile.phone);
+                    localStorage.setItem('user_coworker', data.profile.is_coworker);
+                    localStorage.setItem('user_owner'   , data.profile.is_owner);
 
                     const profilePicElement = document.querySelector(".user-session-profile-pic");
                     if (profilePicElement) {
@@ -57,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
 
                 } catch (error) {
-                    console.error('Erro na requisição:', error);
+                    console.error('Error in request:', error);
                 }
     
             }else{
