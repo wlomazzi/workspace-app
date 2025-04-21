@@ -1,7 +1,8 @@
-const user = JSON.parse(sessionStorage.getItem("loggedUser"));
+//const user = JSON.parse(sessionStorage.getItem("loggedUser"));
+const user = localStorage.getItem('user_id');  // Get the user ID from localStorage 
 let calendarLeaseType = '';
 let calendarPrice = 0;
-
+let totalPrice = 0;
 
 
 // Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID ----------------------------------------------------------------
@@ -239,8 +240,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         onClose: function(selectedDates) {
             if (selectedDates.length === 2) {
                 const startDate = new Date(selectedDates[0]);
-                const endDate = new Date(selectedDates[1]);
-                const diffTime = Math.abs(endDate - startDate);
+                const endDate   = new Date(selectedDates[1]);
+                const diffTime  = Math.abs(endDate - startDate);
                 let totalUnits;
 
                 // Check which unit to use (day, week, month) and Do the calculation -----------------------
@@ -256,7 +257,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 // Calculate the total price, based on the selected unit and price
-                const totalPrice = totalUnits * calendarPrice;
+                totalPrice = totalUnits * calendarPrice;
 
                 // Update the message in the HTML
                 document.getElementById("message").innerHTML = `
@@ -313,15 +314,97 @@ function getOccupiedDates(reservations) {
 
 
 
-
 // BOOKING CONFIRMATION - After select the dates and confirm booking 
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("form-space");
+
+    if (form) {
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault(); // prevents the default form submission
+            
+            // Check if user is logged in
+            if (!user) {
+                alert('You are not logged in. Please log in and do the reservation again.');
+
+                // Save the current URL in sessionStorage before redirecting to login
+                sessionStorage.setItem('redirectAfterLogin', window.location.href);
+
+                // Redirect to login page
+                window.location.href = "login.html";
+                return;
+            } 
+
+            // Fetch the occupied dates for the space
+            const workspaceId  = new URLSearchParams(window.location.search).get('id');  // Get space_id from URL
+            const dateRange    = document.getElementById("date-range").value; // Assuming the value contains the date range
+            //const selectedDates = document.getElementById("date-range").value; // Assuming the value contains the date range
+            // Assuming the selectedDates are split into an array (e.g. '2025-03-01 to 2025-03-10')
+            //const datesArray = getDatesBetween(selectedDates); // Get all dates between the selected range
+
+            // Extract start and end dates from the date range field (format: yyyy-mm-dd to yyyy-mm-dd)
+            const [start_time, end_time] = dateRange.split(' to ');
+
+            // Define the lease type (day/week/month) — this should come from your workspace info
+            const lease_time = document.getElementById("space-lease").textContent; // dynamically get from the workspace object
+
+
+            // Define the price per unit and calculate total
+            const rent_price = parseFloat(document.getElementById('space-price').textContent.replace(/[^\d.]/g, ''));
+            const rent_total = totalPrice;
+
+            const status = 'confirmed';
+            const payment_status = 'paid';
+
+            console.log('lease_time:',lease_time);
+
+            try {
+                const response = await fetch('/api/spaces/workspaces/reservations_insert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: user,
+                        workspace_id: workspaceId,
+                        start_time: start_time,
+                        end_time: end_time,
+                        lease_time: lease_time,
+                        rent_price: rent_price,
+                        rent_total: rent_total,
+                        status: status,
+                        payment_status: payment_status
+                    })
+                });
+        
+                
+                const result = await response.json();
+        
+                if (result.success) {
+                    alert('Reservation successfully created!');
+                    // Optionally redirect or reset UI
+                } else {
+                    alert(`Error creating reservation: ${result.error}`);
+                }
+            } catch (error) {
+                console.error('Error sending booking:', error);
+                alert('An unexpected error occurred.');
+            }
+            
+
+
+        });
+    }
+});
+
+
+/*
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("form-space");
 
     if (form) {
         form.addEventListener("submit", function (event) {
             event.preventDefault(); // prevents the default form submission
-
+            alert("voce clicou em reservation");
             // Check if user is logged in
             if (!user) {
                 alert('You are not logged in. Please log in and do the reservation again.');
@@ -376,6 +459,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+*/
+
 
 // Function to generate all dates between two dates
 function getDatesBetween(range) {

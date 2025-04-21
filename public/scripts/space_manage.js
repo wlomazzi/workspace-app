@@ -1,6 +1,6 @@
 // Function to get the user session
-const user = JSON.parse(sessionStorage.getItem("loggedUser"));
-let latitude  = 0;
+//const user    = JSON.parse(sessionStorage.getItem("loggedUser"));
+const user  = localStorage.getItem('user_id');  // Get the user ID from localStoragelet latitude  = 0;
 let longitude = 0;
 
 
@@ -95,6 +95,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         document.getElementById("amn_air").checked = workspace.amn_air;
         document.getElementById("amn_smoking").checked = workspace.amn_smoking;
 
+        document.getElementById("workspace-status").checked = workspace.active;
+
         console.log('workspace',workspace);
 
         // Populate images
@@ -155,7 +157,7 @@ document.getElementById("spaceForm").addEventListener("submit", async function(e
     event.preventDefault(); 
 
     const spaceId = new URLSearchParams(window.location.search).get('space_id'); // Get the ID space from the URL
-    const user    = JSON.parse(sessionStorage.getItem("loggedUser"));  // Get the logged in user
+    //const user    = JSON.parse(sessionStorage.getItem("loggedUser"));  // Get the logged in user
 
     if (!user) {
         alert("You need to be logged in to update the workspace.");
@@ -163,7 +165,7 @@ document.getElementById("spaceForm").addEventListener("submit", async function(e
     }
 
     const updatedData = {
-        user_id: user.user_id,
+        user_id: user,
         space_id: spaceId,
         title: document.getElementById("title").value,
         details: document.getElementById("details").value,
@@ -183,6 +185,8 @@ document.getElementById("spaceForm").addEventListener("submit", async function(e
         amn_printer: document.getElementById("amn_printer").checked,
         amn_air: document.getElementById("amn_air").checked,
         amn_smoking: document.getElementById("amn_smoking").checked,
+
+        active: document.getElementById("workspace-status").checked,
 
         // Images should be passed as URLs, update them if new images are selected
         image_01: document.getElementById("image1").src,

@@ -160,6 +160,59 @@ fieldset {
 }
 
 
+
+
+/* Checkboxes Workspace Status */
+.workspace-status-container {
+    display: flex;
+    flex-direction:row;
+    gap: 10px;
+}
+
+/* Adjust to align checkboxes with text */
+.workspace-status-container label {
+    display: flex;
+    align-items: center; /* Centers vertically */
+    gap: 10px; /* Space between checkbox and text */
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Adjusting the size and position of the checkbox */
+.workspace-status-container input[type="checkbox"] {
+    appearance: none; /* Remove default browser style */
+    width: 18px;
+    height: 18px;
+    border: 2px solid #007bff;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Styles the checkbox when checked */
+.workspace-status-container input[type="checkbox"]:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+    position: relative;
+}
+
+/* Add a chack (✔️) in checkbox */
+.workspace-status-container input[type="checkbox"]:checked::after {
+    content: "✔";
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+
+
 /* Button Confirmation [ record the space data ] */
 #spaceForm button {
     width: 100%;

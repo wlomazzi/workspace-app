@@ -126,8 +126,18 @@ async function logout() {
 
         if (response.ok) {
             alert('Logout realized successfully! You will be redirected to the login page.');
+            // Remove all user-related data from localStorage
+            localStorage.removeItem('logged_user');
             localStorage.removeItem('access_token');
+            localStorage.removeItem('user_email');
             localStorage.removeItem('user_id');
+            localStorage.removeItem('user_picture');
+            localStorage.removeItem('user_fullname');
+            localStorage.removeItem('user_location');
+            localStorage.removeItem('user_phone');
+            localStorage.removeItem('user_coworker');
+            localStorage.removeItem('user_owner');
+
             window.location.href = "index.html";
         } else {
             console.error('Logout error:', data.error);

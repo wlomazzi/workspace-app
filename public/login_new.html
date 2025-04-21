@@ -23,11 +23,18 @@
 
     <form id="registerForm">
         <h2>Create an Account</h2>
-        <label for="user_id">Username:</label>
-        <input type="text" id="user_login" name="user_login" required>
+        <!--
+        <label for="user_id">User fullname:</label>
+        <input type="text" id="user_fullname" name="user_fullname" required>
+        -->
+        <label for="user_id">User email:</label>
+        <input type="email" id="user_login" name="user_login" required>
 
         <label for="user_password">Password:</label>
         <input type="password" id="user_password" name="user_password" required>
+
+        <label for="user_password_repeat">Repeat Password:</label>
+        <input type="password" id="user_password_repeat" name="user_password_repeat" required>
 
         <button type="submit">Sign Up</button>
     </form>

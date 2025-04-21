@@ -76,9 +76,11 @@ if (featuredSection) {
             </select>
             <button>Search</button>
             <div class="icon-box" id="filter-icon"><img src="/images/filter-icon.png" alt="Icon 1" class="feature-icon"></div>
-            <!--<div class="icon-box"><img src="/images/public-transport.png" alt="Icon 2" class="feature-icon"></div>
+            <!--
+            <div class="icon-box"><img src="/images/public-transport.png" alt="Icon 2" class="feature-icon"></div>
             <div class="icon-box"><img src="/images/parked-car.png" alt="Icon 3" class="feature-icon"></div>
-            <div class="icon-box"><img src="/images/cutlery.png" alt="Icon 4" class="feature-icon"></div>-->
+            <div class="icon-box"><img src="/images/cutlery.png" alt="Icon 4" class="feature-icon"></div>
+            -->
         </div>
     </div>
     `;
@@ -142,6 +144,17 @@ document.addEventListener("DOMContentLoaded", function() {
                         </select>
                     </div>
                     
+                    <div class="filter-group">
+                        <br>
+                        <label for="sort">Sort</label>
+                        <select id="sort">
+                            <option value="value_less">Value: Low to high</option>
+                            <option value="value_high">Value: High to low</option>
+                            <option value="recently">Recently Added</option>
+                            <option value="rating">Rating</option>
+                        </select>
+                    </div>
+                    
                     <div class="filter-buttons" style="display: flex; justify-content: space-between; margin-top: 15px;">
                         <button id="apply-filters" style="padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Apply</button>
                         <button id="close-filters" style="padding: 10px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Close</button>
@@ -186,7 +199,7 @@ document.querySelector('button').addEventListener('click', async function () {
     const checkOut = document.getElementById('check-out').value;
     const teamSize = document.getElementById('team-size').value;
 
-    const user = JSON.parse(sessionStorage.getItem("loggedUser"));
+    //const user = JSON.parse(sessionStorage.getItem("loggedUser"));
     /*
     if (!user) {
         alert("Please log in to search for spaces.");
@@ -259,6 +272,9 @@ async function filterSpaces() {
     // Rating
     const rating = document.getElementById('rating').value;
 
+    // Sort
+    const sort = document.getElementById('sort').value;
+
     const filters = {
         location: location,
         check_in: checkIn,
@@ -274,7 +290,8 @@ async function filterSpaces() {
         amn_air: airConditioning,
         amn_smoking: smoke,
         location_type: locationType,
-        rating: rating
+        rating: rating,
+        sort: sort
     };
 
     // Sending filters to the backend via POST

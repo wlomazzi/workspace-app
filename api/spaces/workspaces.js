@@ -32,8 +32,10 @@ router.get("/", async (req, res) => {
         
         if (id) {
             query = query.eq('id', id);  // Get the workspace with the specified ID
+
+        }else{
+            query = query.eq('active', true);  // Get only active workspaces
         }
-            
 
         const { data, error } = await query;
 
@@ -69,7 +71,8 @@ router.post("/filter_spaces", async (req, res) => {
         amn_air, 
         amn_smoking, 
         location_type, 
-        rating 
+        rating,
+        sort 
     } = req.body; // Receiving the filter parameters
 
     //console.log(req.body); // Debug JSON Payload
@@ -146,7 +149,29 @@ router.post("/filter_spaces", async (req, res) => {
             query = query.gte('rating', rating); // Filters workspaces with rating greater than or equal to the provided rating
         }
 
+        
         // console.log('query....:',query); // Debug QUERY
+
+        // Apply sorting based on user's selection
+        if (sort) {
+            switch (sort) {
+                case 'value_less':
+                    query = query.order('price', { ascending: true });
+                    break;
+                case 'value_high':
+                    query = query.order('price', { ascending: false });
+                    break;
+                case 'recently':
+                    query = query.order('created_at', { ascending: false });
+                    break;
+                case 'rating':
+                    query = query.order('rating', { ascending: false });
+                    break;
+                default:
+                    query = query.order('created_at', { ascending: false }); // Fallback sort
+            }
+        }
+
 
         // Running the query on Supabase
         const { data, error } = await query;
@@ -249,7 +274,7 @@ router.post("/coworker_spaces", async (req, res) => {  // Changed to POST
 // Route to insert workspaces for the owner
 router.post("/insert", async (req, res) => {
     const { user_id, title, details, price, address, neighborhood, seats, type, lease_time, latitude, longitude, available_from,
-        amn_kitchen, amn_parking, amn_public_transport, amn_wifi, amn_printer, amn_air, amn_smoking} = req.body;
+        amn_kitchen, amn_parking, amn_public_transport, amn_wifi, amn_printer, amn_air, amn_smoking, active} = req.body;
 
     // Check if all required fields are provided
     if (!user_id || !title || !details || !price || !address || !neighborhood || !seats || !type || !lease_time || !latitude || !longitude) {
@@ -279,6 +304,7 @@ router.post("/insert", async (req, res) => {
             amn_printer,
             amn_air,
             amn_smoking,
+            active
         };
 
         // Update the workspace record in Supabase
@@ -304,7 +330,7 @@ router.post("/insert", async (req, res) => {
 // Route to update the workspace by workspace_id
 router.post("/update", async (req, res) => {
     const { user_id, space_id, title, details, price, address, neighborhood, seats, type, lease_time, latitude, longitude, available_from,
-        amn_kitchen, amn_parking, amn_public_transport, amn_wifi, amn_printer, amn_air, amn_smoking} = req.body;
+        amn_kitchen, amn_parking, amn_public_transport, amn_wifi, amn_printer, amn_air, amn_smoking, active} = req.body;
 
     // Check if all required fields are provided
     if (!user_id || !space_id || !title || !details || !price || !address || !neighborhood || !seats || !type || !lease_time || !latitude || !longitude) {
@@ -344,6 +370,7 @@ router.post("/update", async (req, res) => {
             amn_printer,
             amn_air,
             amn_smoking,
+            active
         };
 
         // Update the workspace record in Supabase
@@ -454,6 +481,65 @@ router.get("/reservations", async (req, res) => {
     } catch (error) {
         console.error('Error getting the data:', error.message);
         res.status(500).json({ error: error.message });
+    }
+});
+
+
+
+
+
+
+// Route to insert reservations for the workspace and the coworker
+router.post("/reservations_insert", async (req, res) => {
+    const { 
+        user_id, 
+        workspace_id, 
+        start_time, 
+        end_time, 
+        lease_time, 
+        rent_price, 
+        rent_total,
+        status,
+        payment_status
+    } = req.body;
+
+    console.log(req);
+    // Check if all required fields are provided
+    if (!user_id || !workspace_id || !start_time || !end_time || !lease_time || !rent_price || !rent_total) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    try {
+
+        // Prepare data to update the workspace
+        const insertreservation = {
+            user_id,
+            workspace_id,
+            start_time,
+            end_time,
+            lease_time,
+            rent_price,
+            rent_total,
+            status,
+            payment_status
+        };
+
+        // Update the workspace record in Supabase
+        const { data, error } = await supabase
+            .from('reservations')
+            .insert(insertreservation);
+
+        if (error) {
+            console.error('Error inserting reservation:', error);
+            return res.status(500).json({ error: 'Failed to insert reservation' });
+        }
+
+        // Return success message with the updated data
+        return res.status(200).json({ success: true, insertreservation: data });
+
+    } catch (error) {
+        console.error('Server error:', error);
+        return res.status(500).json({ error: 'An unexpected error occurred' });
     }
 });
 

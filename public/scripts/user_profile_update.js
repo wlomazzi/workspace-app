@@ -153,7 +153,7 @@ document.getElementById("updateProfile").addEventListener("click", async functio
             localStorage.setItem("loggedUser", JSON.stringify(updatedUserData));
 
             // Optionally, update sessionStorage as well
-            sessionStorage.setItem("loggedUser", JSON.stringify(updatedUserData));
+            //sessionStorage.setItem("loggedUser", JSON.stringify(updatedUserData));
 
             // Update the fields on the page with the new data
             updateProfileFields(updatedUserData);

@@ -49,6 +49,35 @@ router.post("/", async (req, res) => {
 });
 
 
+// POST /api/register
+router.post('/register', async (req, res) => {
+    const { email, password, full_name } = req.body;
+  
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+  
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: full_name || null
+        }
+      }
+    });
+  
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  
+    res.status(201).json({
+      message: 'User registered successfully',
+      access_token: data.session?.access_token || null,
+      user: data.user
+    });
+  });
+
 
 // POST /api/logout
 router.post("/logout", async (req, res) => {
@@ -127,35 +156,59 @@ router.post("/profile_update", async (req, res) => {
             .single();  // Using .single() to ensure only 1 result is returned
 
         if (userError || !userData) {
-            console.error('User not found or error:', userError);
-            return res.status(404).json({ error: 'User not found' });
+            //console.error('User not found or error:', userError);
+            //return res.status(404).json({ error: 'User not found' });
+            // Update profile data in the 'profiles' table
+            const { data, error } = await supabase
+                .from('profiles')
+                .insert({
+                    id: user_id,
+                    full_name: full_name,
+                    location: location,
+                    phone: phone,
+                    is_owner: is_owner,  // Update is_owner
+                    is_coworker: is_coworker  // Always true for is_coworker
+                })
+                .eq('id', user_id) // Where the user_id is the same as the one sent in the request
+                .select();  // This forces Supabase to return the updated data
+
+            //console.log('Supabase update response:', data);  // Supabase response log
+            //console.log('Supabase update error:', error); // Supabase error log
+
+            if (error) {
+                console.error('Error updating profile:', error);
+                return res.status(500).json({ error: 'Failed to update profile' });
+            }
+
+            // If the data was updated, return the response with success
+            res.status(200).json({ success: true, updatedProfile: data });
+        }else{
+            // console.log('User found:', userData); // debug
+            // Update profile data in the 'profiles' table
+            const { data, error } = await supabase
+                .from('profiles')
+                .update({
+                    full_name: full_name,
+                    location: location,
+                    phone: phone,
+                    is_owner: is_owner,  // Update is_owner
+                    is_coworker: is_coworker  // Always true for is_coworker
+                })
+                .eq('id', user_id) // Where the user_id is the same as the one sent in the request
+                .select();  // This forces Supabase to return the updated data
+
+            //console.log('Supabase update response:', data);  // Supabase response log
+            //console.log('Supabase update error:', error); // Supabase error log
+
+            if (error) {
+                console.error('Error updating profile:', error);
+                return res.status(500).json({ error: 'Failed to update profile' });
+            }
+
+            // If the data was updated, return the response with success
+            res.status(200).json({ success: true, updatedProfile: data });
         }
 
-        // console.log('User found:', userData); // debug
-
-        // Update profile data in the 'profiles' table
-        const { data, error } = await supabase
-            .from('profiles')
-            .update({
-                full_name: full_name,
-                location: location,
-                phone: phone,
-                is_owner: is_owner,  // Update is_owner
-                is_coworker: is_coworker  // Always true for is_coworker
-            })
-            .eq('id', user_id) // Where the user_id is the same as the one sent in the request
-            .select();  // This forces Supabase to return the updated data
-
-        //console.log('Supabase update response:', data);  // Supabase response log
-        //console.log('Supabase update error:', error); // Supabase error log
-
-        if (error) {
-            console.error('Error updating profile:', error);
-            return res.status(500).json({ error: 'Failed to update profile' });
-        }
-
-        // If the data was updated, return the response with success
-        res.status(200).json({ success: true, updatedProfile: data });
     } catch (error) {
         console.error('Server error:', error);
         res.status(500).json({ error: 'An unexpected error occurred' });
@@ -188,8 +241,8 @@ router.post("/profile_picture", upload.single("file"), async (req, res) => {
         const user_id      = userData.user.id;  // Get the user_id from the decoded token
         const file         = req.file;
 
-        console.log('user_id:',user_id);
-        console.log('file:',file);
+        //console.log('user_id:',user_id);
+        //console.log('file:',file);
 
         if (!file) {
             return res.status(400).json({ success: false, message: "File is required." });
@@ -210,6 +263,15 @@ router.post("/profile_picture", upload.single("file"), async (req, res) => {
         if (error) {
             console.error('Supabase upload error:', error);
             return res.status(500).json({ success: false, message: error.message });
+        }else{
+            // Update profile picture in the 'profiles' table
+            const { dt_profile, err_profile } = await supabase
+            .from('profiles')
+            .update({
+                avatar_url: "https://taeieijsgxjagfulbndt.supabase.co/storage/v1/object/public/workspaces/" + filePath // Update the user profile picture
+            })
+            .eq('id', user_id) // Where the user_id is the same as the one sent in the request
+            .select();  // This forces Supabase to return the updated data 
         }
 
         return res.json({ success: true });
