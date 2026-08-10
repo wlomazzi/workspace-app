@@ -263,18 +263,24 @@ router.post("/profile_picture", upload.single("file"), async (req, res) => {
         if (error) {
             console.error('Supabase upload error:', error);
             return res.status(500).json({ success: false, message: error.message });
-        }else{
-            // Update profile picture in the 'profiles' table
-            const { dt_profile, err_profile } = await supabase
-            .from('profiles')
-            .update({
-                avatar_url: "https://taeieijsgxjagfulbndt.supabase.co/storage/v1/object/public/workspaces/" + filePath // Update the user profile picture
-            })
-            .eq('id', user_id) // Where the user_id is the same as the one sent in the request
-            .select();  // This forces Supabase to return the updated data 
         }
 
-        return res.json({ success: true });
+        // Build the public URL from the current project's SUPABASE_URL (filePath already includes 'avatars/')
+        const avatarUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/workspaces/${filePath}`;
+
+        // Update profile picture in the 'profiles' table
+        const { data: dtProfile, error: errProfile } = await supabase
+            .from('profiles')
+            .update({ avatar_url: avatarUrl })
+            .eq('id', user_id) // Where the user_id is the same as the one sent in the request
+            .select();  // This forces Supabase to return the updated data
+
+        if (errProfile) {
+            console.error('Error updating profile avatar_url:', errProfile);
+            return res.status(500).json({ success: false, message: errProfile.message });
+        }
+
+        return res.json({ success: true, avatar_url: avatarUrl });
     } catch (error) {
         console.error('Error uploading file:', error);
         return res.status(500).json({ success: false, message: error.message });

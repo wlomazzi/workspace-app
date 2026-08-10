@@ -42,7 +42,35 @@
                 <div id="rented-spaces" class="spaces-list"></div>
             </div>
         </div>
-        
+
+        <!-- Delete Workspace Confirmation Modal -->
+        <div id="deleteModal" class="delete-modal">
+            <div class="delete-modal-content">
+                <div class="delete-modal-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 9v4"></path>
+                        <path d="M12 17h.01"></path>
+                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path>
+                    </svg>
+                </div>
+                <h3>Delete this workspace?</h3>
+                <p>You're about to permanently delete <strong id="deleteModalSpaceName"></strong>. This will also remove any reservations linked to it. This action cannot be undone.</p>
+                <div class="delete-modal-buttons">
+                    <button id="deleteModalCancel" class="delete-modal-btn delete-modal-cancel">Cancel</button>
+                    <button id="deleteModalConfirm" class="delete-modal-btn delete-modal-confirm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                            <path d="M10 11v6"></path>
+                            <path d="M14 11v6"></path>
+                        </svg>
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script src="/scripts/user_profile.js"></script>
     </body>
 </body>

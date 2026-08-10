@@ -78,6 +78,24 @@ router.post("/filter_spaces", async (req, res) => {
     //console.log(req.body); // Debug JSON Payload
 
     try {
+        // If the user searched by date range, find workspaces that already have a
+        // conflicting reservation in that window, so they can be excluded below.
+        // Two ranges overlap when: reservation.start_time <= check_out AND reservation.end_time >= check_in.
+        let workspaceIdsToExclude = [];
+        if (check_in && check_out) {
+            const { data: conflictingReservations, error: reservationsError } = await supabase
+                .from('reservations')
+                .select('workspace_id')
+                .lte('start_time', check_out)
+                .gte('end_time', check_in);
+
+            if (reservationsError) {
+                return res.status(500).json({ error: 'Error checking existing reservations.' });
+            }
+
+            workspaceIdsToExclude = [...new Set((conflictingReservations || []).map(r => r.workspace_id))];
+        }
+
         // Construindo a consulta do Supabase com base nos parâmetros
         let query = supabase
             .from('workspaces')
@@ -91,9 +109,13 @@ router.post("/filter_spaces", async (req, res) => {
 
         // Filtering by availability date (check-in / check-out)
         if (check_in && check_out) {
-            query = query
-                .gte('available_from', check_in) // Greater than or equal to check-in date
-                .lte('available_from', check_out); // Less than or equal to checkout date
+            // The space must already be available by the requested check-in date...
+            query = query.lte('available_from', check_in);
+
+            // ...and must not have any reservation overlapping the requested range.
+            if (workspaceIdsToExclude.length > 0) {
+                query = query.not('id', 'in', `(${workspaceIdsToExclude.join(',')})`);
+            }
         }
 
         // Filtering by team size
@@ -386,6 +408,48 @@ router.post("/update", async (req, res) => {
 
         // Return success message with the updated data
         return res.status(200).json({ success: true, updatedWorkspace: data });
+
+    } catch (error) {
+        console.error('Server error:', error);
+        return res.status(500).json({ error: 'An unexpected error occurred' });
+    }
+});
+
+
+
+// Route to delete a workspace owned by the user
+router.post("/delete", async (req, res) => {
+    const { user_id, space_id } = req.body;
+
+    if (!user_id || !space_id) {
+        return res.status(400).json({ error: 'user_id and space_id are required' });
+    }
+
+    try {
+        // Check if the workspace exists and belongs to the user
+        const { data: workspace, error: workspaceError } = await supabase
+            .from('workspaces')
+            .select('*')
+            .eq('id', space_id)
+            .eq('user_id', user_id)
+            .single();
+
+        if (workspaceError || !workspace) {
+            return res.status(404).json({ error: 'Workspace not found or does not belong to the user' });
+        }
+
+        // Delete the workspace record (associated reservations are removed automatically via ON DELETE CASCADE)
+        const { error } = await supabase
+            .from('workspaces')
+            .delete()
+            .eq('id', space_id);
+
+        if (error) {
+            console.error('Error deleting workspace:', error);
+            return res.status(500).json({ error: 'Failed to delete workspace' });
+        }
+
+        return res.status(200).json({ success: true });
 
     } catch (error) {
         console.error('Server error:', error);

@@ -126,17 +126,36 @@ document.addEventListener("DOMContentLoaded", async function () {
         const container = document.getElementById(containerId);
         container.innerHTML = "";
         spaces.forEach(space => {
-            const spaceCard = document.createElement("div");
-            spaceCard.classList.add("space-card");
-            spaceCard.innerHTML = `
-                <div onclick="window.location.href='space_manage.html?space_id=${space.id}'">
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("space-card-wrapper");
+            wrapper.innerHTML = `
+                <button type="button" class="space-delete-btn" title="Delete workspace" aria-label="Delete workspace">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"></path>
+                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                        <path d="M10 11v6"></path>
+                        <path d="M14 11v6"></path>
+                    </svg>
+                </button>
+                <div class="space-card">
                     <img src="${space.image}" alt="${space.title}">
                     <h4>${space.title}</h4>
                     <p>${space.location}</p>
                     <p><strong>${space.price}</strong></p>
                 </div>
             `;
-            container.appendChild(spaceCard);
+
+            // Wire up events with real listeners (avoids HTML-escaping issues with inline onclick strings)
+            wrapper.querySelector(".space-delete-btn").addEventListener("click", function (event) {
+                event.stopPropagation();
+                openDeleteModal(space.id, space.title);
+            });
+            wrapper.querySelector(".space-card").addEventListener("click", function () {
+                window.location.href = `space_manage.html?space_id=${space.id}`;
+            });
+
+            container.appendChild(wrapper);
         });
     }
 
@@ -166,6 +185,78 @@ document.addEventListener("DOMContentLoaded", async function () {
 function openSpaceDetails(spaceId) {
     window.location.href = `space_details.html?id=${spaceId}`;
 }
+
+// DELETE WORKSPACE - Custom confirmation modal ---------------------------------------------------------------------
+let pendingDeleteSpaceId = null;
+
+function openDeleteModal(spaceId, spaceTitle) {
+    pendingDeleteSpaceId = spaceId;
+    document.getElementById("deleteModalSpaceName").textContent = spaceTitle || "this workspace";
+    document.getElementById("deleteModal").classList.add("open");
+}
+
+function closeDeleteModal() {
+    pendingDeleteSpaceId = null;
+    document.getElementById("deleteModal").classList.remove("open");
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("deleteModal");
+    const cancelBtn = document.getElementById("deleteModalCancel");
+    const confirmBtn = document.getElementById("deleteModalConfirm");
+
+    if (!modal || !cancelBtn || !confirmBtn) return;
+
+    // Cancel button closes the modal without deleting anything
+    cancelBtn.addEventListener("click", closeDeleteModal);
+
+    // Clicking the dark backdrop (outside the card) also cancels
+    modal.addEventListener("click", function (event) {
+        if (event.target === modal) closeDeleteModal();
+    });
+
+    // Confirm button actually calls the delete endpoint
+    confirmBtn.addEventListener("click", async function () {
+        if (!pendingDeleteSpaceId) return;
+
+        const userId = localStorage.getItem('user_id');
+        const spaceId = pendingDeleteSpaceId;
+
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Deleting...";
+
+        try {
+            const response = await fetch('/api/spaces/workspaces/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, space_id: spaceId })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                closeDeleteModal();
+                window.location.reload();
+            } else {
+                alert("Failed to delete workspace: " + (result.error || "Unknown error"));
+            }
+        } catch (error) {
+            console.error("Error deleting workspace:", error);
+            alert("An error occurred while deleting the workspace.");
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                </svg>
+                Delete`;
+        }
+    });
+});
 
 document.querySelector(".add-new-btn").addEventListener("click", function () {
     window.location.href = "space_manage.html";

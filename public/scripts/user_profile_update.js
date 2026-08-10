@@ -239,7 +239,8 @@ document.getElementById("fileInput").addEventListener("change", async function (
 
             if (result.success) {
                 // Update the profile picture on the page with the new URL
-                // document.getElementById("profile-pic").src = result.newImageUrl;
+                document.getElementById("profile-pic").src = result.avatar_url;
+                localStorage.setItem('user_picture', result.avatar_url);
                 alert("Profile image updated successfully.");
             } else {
                 alert("Failed to update profile picture.");

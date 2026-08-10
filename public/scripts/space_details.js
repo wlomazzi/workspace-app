@@ -3,6 +3,7 @@ const user = localStorage.getItem('user_id');  // Get the user ID from localStor
 let calendarLeaseType = '';
 let calendarPrice = 0;
 let totalPrice = 0;
+let calendarAvailableFrom = null;
 
 
 // Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID ----------------------------------------------------------------
@@ -75,6 +76,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Store the lease type and price for later use in the calendar
     calendarLeaseType = spaceData.lease_time;
     calendarPrice = parseFloat(spaceData.price);
+    calendarAvailableFrom = spaceData.available_from || null;
 
     //console.log('spaceData:', spaceData); // Debug data
 
@@ -225,10 +227,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // CALENDAR - Initialize flatpickr for the date range input ------------------------------------------------------------------
+    // The calendar can't allow booking before today, nor before the space's available_from date.
+    const todayStr = new Date().toISOString().split('T')[0];
+    const calendarMinDate = (calendarAvailableFrom && calendarAvailableFrom > todayStr)
+        ? calendarAvailableFrom
+        : todayStr;
+
     flatpickr("#date-range", {
-        mode: "range",          // Allow date range selection
-        minDate: "today",       // Disallow past dates
-        disable: occupiedDates, // Disable occupied dates - Returned by the API getReservationsByWorkspaceId(spaceId);
+        mode: "range",           // Allow date range selection
+        minDate: calendarMinDate, // Disallow past dates and dates before the space becomes available
+        disable: occupiedDates,  // Disable occupied dates - Returned by the API getReservationsByWorkspaceId(spaceId);
         dateFormat: "Y-m-d",    // Set date format
         onDayCreate: function (dObj, dStr, instance) {
             const occupied = occupiedDates.includes(dStr); // Check if the date is occupied
