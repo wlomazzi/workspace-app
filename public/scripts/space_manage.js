@@ -3,6 +3,16 @@
 const user  = localStorage.getItem('user_id');  // Get the user ID from localStoragelet latitude  = 0;
 let longitude = 0;
 
+// Images picked by the user are kept in memory (not uploaded yet) until the workspace
+// itself is saved and we know for sure which space_id to attach them to.
+// This works the same way for both "Insert" (space_id doesn't exist yet) and "Edit" (it does).
+const pendingImageFiles = {
+    image_01: null,
+    image_02: null,
+    image_03: null,
+    image_04: null
+};
+
 
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -14,30 +24,34 @@ document.addEventListener("DOMContentLoaded", async function () {
     imageBoxes.forEach((box, index) => {
         const imageInput = document.getElementById(`imageInput${index + 1}`);
         const image = document.getElementById(`image${index + 1}`);
-        
+        const imageCode = `image_0${index + 1}`;
+
         // Torna a imagem clicável
         image.addEventListener("click", function() {
             // Aciona o input file clicando na imagem
             imageInput.click();
         });
 
-        // Manipula a seleção de arquivos no input
+        // Manipula a seleção de arquivos no input: só gera a prévia local e guarda o
+        // arquivo em memória. O upload de verdade só acontece quando o form é salvo.
         imageInput.addEventListener("change", function(event) {
             const file = event.target.files[0];
 
             if (file) {
+                pendingImageFiles[imageCode] = file;
+
                 const reader = new FileReader();
                 reader.onloadend = function() {
                     // Substitui a imagem do thumbnail pela imagem selecionada
                     image.src = reader.result;
                     image.style.display = "block"; // Torna a imagem visível
                 };
-                reader.readAsDataURL(file); // Lê a imagem como base64
+                reader.readAsDataURL(file); // Lê a imagem como base64 (só para prévia)
             }
         });
     });
-    
-    
+
+
     if (!spaceId) {
         if (!user){
             alert("Insert not allowed. User not loged in.");
@@ -152,19 +166,22 @@ function populateImages(workspace) {
 
 
 
-// Function to update the workspace data
+// Function to save the workspace data (insert or update), then upload any pending images
+// using the workspace's real id, then show the success confirmation.
 document.getElementById("spaceForm").addEventListener("submit", async function(event) {
-    event.preventDefault(); 
+    event.preventDefault();
 
     const spaceId = new URLSearchParams(window.location.search).get('space_id'); // Get the ID space from the URL
-    //const user    = JSON.parse(sessionStorage.getItem("loggedUser"));  // Get the logged in user
+    const submitBtn = document.querySelector("button[type='submit']");
 
     if (!user) {
         alert("You need to be logged in to update the workspace.");
         return;
     }
 
-    const updatedData = {
+    // Note: image_01..04 are intentionally NOT part of this payload. They're only ever
+    // written by the /upload_image endpoint, once we know the workspace's real id.
+    const workspaceData = {
         user_id: user,
         space_id: spaceId,
         title: document.getElementById("title").value,
@@ -185,103 +202,113 @@ document.getElementById("spaceForm").addEventListener("submit", async function(e
         amn_printer: document.getElementById("amn_printer").checked,
         amn_air: document.getElementById("amn_air").checked,
         amn_smoking: document.getElementById("amn_smoking").checked,
-
-        active: document.getElementById("workspace-status").checked,
-
-        // Images should be passed as URLs, update them if new images are selected
-        image_01: document.getElementById("image1").src,
-        image_02: document.getElementById("image2").src,
-        image_03: document.getElementById("image3").src,
-        image_04: document.getElementById("image4").src
-        
+        active: document.getElementById("workspace-status").checked
     };
 
-    // Send the updated data to the backend
+    const api_type = (spaceId && spaceId.trim() !== "") ? 'update' : 'insert';
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = api_type === 'insert' ? "Creating..." : "Saving...";
+
     try {
-
-        let api_type = '';
-        if (spaceId && spaceId.trim() !== ""){
-            api_type = 'update';
-        }else{
-            api_type = 'insert';
-        }
-
+        // Step 1: save the workspace's text/boolean fields first.
         const response = await fetch(`/api/spaces/workspaces/${api_type}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedData)
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(workspaceData)
         });
-
-        console.log(`${api_type}Data: `, updatedData);
 
         const result = await response.json();
 
-        if (result.success) {
-            console.log('result:',result);
-            alert("Workspace updated successfully.");
-            //window.location.href = "/workspace_details.html?space_id=" + spaceId;  // Redirect to the updated workspace page
-        } else {
-            alert("Failed to update workspace: " + result.error);
+        if (!result.success) {
+            alert("Failed to save workspace: " + result.error);
+            return;
         }
+
+        // Step 2: now that the workspace definitely has an id (either the one already in
+        // the URL, or the one just created by the insert), upload any images the user picked.
+        const resolvedSpaceId = api_type === 'insert' ? result.insertWorkspaceData.id : spaceId;
+        const uploadErrors = await uploadPendingImages(resolvedSpaceId);
+
+        if (uploadErrors.length > 0) {
+            console.error("Some images failed to upload:", uploadErrors);
+            alert("The workspace was saved, but some images failed to upload: " + uploadErrors.join(", "));
+        }
+
+        showSaveSuccessModal(api_type);
+
     } catch (error) {
-        console.error("Error updating workspace:", error);
-        alert("An error occurred while updating the workspace.");
+        console.error("Error saving workspace:", error);
+        alert("An error occurred while saving the workspace.");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = api_type === 'insert' ? "Insert Workspace" : "Update Workspace";
     }
 });
 
+// Uploads every image the user selected (if any) for the given space id.
+// Returns an array of error messages (empty if everything succeeded).
+async function uploadPendingImages(spaceId) {
+    const entries = Object.entries(pendingImageFiles).filter(([, file]) => file !== null);
+    if (entries.length === 0) return [];
 
+    const results = await Promise.all(
+        entries.map(([imageCode, file]) => uploadImageFile(file, spaceId, imageCode))
+    );
 
-async function uploadImageToBackend(event, imageCode) {
-    const spaceId = new URLSearchParams(window.location.search).get('space_id');  // Get the space_id from the URL
-    const file    = event.target.files[0];  // Get the selected image file
+    return results.filter(r => !r.success).map(r => r.message);
+}
 
-    if (!file || !spaceId) {
-        alert("Invalid file or space ID.");
-        return;
-    }
-
+// Uploads a single image file to the backend for the given space/imageCode.
+async function uploadImageFile(file, spaceId, imageCode) {
     const formData = new FormData();
-    formData.append("file", file);  // Add the file to the request
-    formData.append("space_id", spaceId);  // Add the space_id
-    formData.append("image_code", imageCode);  // Add the image code (image_01, image_02, etc.)
+    formData.append("file", file);
+    formData.append("space_id", spaceId);
+    formData.append("image_code", imageCode);
 
     try {
         const response = await fetch("/api/spaces/workspaces/upload_image", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,  // If necessary, pass the token in the header
+                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
             },
             body: formData
         });
 
         const result = await response.json();
-
-        if (result.success) {
-            //alert("Image uploaded and workspace updated successfully!");
-            // Here we can update the image view or provide other feedback.
-        } else {
-            alert("Failed to upload image: " + result.message);
-        }
+        return result.success ? { success: true } : { success: false, message: result.message || imageCode };
     } catch (error) {
-        console.error("Error uploading image:", error);
-        alert("An error occurred while uploading the image.");
+        console.error(`Error uploading ${imageCode}:`, error);
+        return { success: false, message: imageCode };
     }
 }
 
-// Attach the event listener for each image input
-document.getElementById("imageInput1").addEventListener("change", function(event) {
-    uploadImageToBackend(event, "image_01");  // Passa o código da imagem para o backend
-});
-document.getElementById("imageInput2").addEventListener("change", function(event) {
-    uploadImageToBackend(event, "image_02");
-});
-document.getElementById("imageInput3").addEventListener("change", function(event) {
-    uploadImageToBackend(event, "image_03");
-});
-document.getElementById("imageInput4").addEventListener("change", function(event) {
-    uploadImageToBackend(event, "image_04");
+// SAVE SUCCESS MODAL - Shown after a workspace is inserted or updated, then redirects to the user's own spaces list --
+function showSaveSuccessModal(apiType) {
+    const modal = document.getElementById("saveSuccessModal");
+    const title = document.getElementById("saveSuccessModalTitle");
+    const message = document.getElementById("saveSuccessModalMessage");
+
+    if (!modal) return;
+
+    if (apiType === 'insert') {
+        title.textContent = "Workspace created";
+        message.textContent = "Your new workspace was created successfully.";
+    } else {
+        title.textContent = "Workspace updated";
+        message.textContent = "Your changes were saved successfully.";
+    }
+
+    modal.classList.add("open");
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("saveSuccessModalBtn");
+    if (btn) {
+        btn.addEventListener("click", function () {
+            window.location.href = "/user_profile.html";
+        });
+    }
 });
 
 

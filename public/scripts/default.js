@@ -1,4 +1,9 @@
-const user = localStorage.getItem('user_id');  // Get the user ID from localStorage 
+const user = localStorage.getItem('user_id');  // Get the user ID from localStorage
+
+// Pagination state - shared by the default listing and the filtered search results
+const PAGE_SIZE = 8;
+let allSpaces = [];
+let currentPage = 1;
 
 // Function to open the space details page
 async function fetchAndDisplayWorkspaces() {
@@ -13,12 +18,33 @@ async function fetchAndDisplayWorkspaces() {
 }
 
 
-// Function to filter the spaces based on the search criteria
+// Entry point: stores the full result set, resets to page 1, and renders it.
+// Called both by the default listing and by the search/filter results.
 function displaySpaces(spaces) {
+    allSpaces = spaces || [];
+    currentPage = 1;
+    renderSpacesPage();
+}
+
+
+// Renders only the slice of allSpaces that belongs to the current page, plus the pagination controls.
+function renderSpacesPage() {
     const spacesContainer = document.querySelector(".spaces");
     spacesContainer.innerHTML = "";  // Clear the container before displaying new spaces
 
-    spaces.forEach(space => {
+    const totalPages = Math.max(1, Math.ceil(allSpaces.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const pageSpaces = allSpaces.slice(startIndex, startIndex + PAGE_SIZE);
+
+    if (allSpaces.length === 0) {
+        displayNoResults();
+        renderPagination(0);
+        return;
+    }
+
+    pageSpaces.forEach(space => {
         const spaceElement = document.createElement("div");
         spaceElement.classList.add("space");
 
@@ -43,9 +69,51 @@ function displaySpaces(spaces) {
                 ${space.amn_smoking ? '<img src="/images/icon-smoke.png" alt="Smoking" class="icon">' : ""}
             </p>
         `;
-        
+
         spacesContainer.appendChild(spaceElement);
     });
+
+    renderPagination(totalPages);
+}
+
+
+// Renders the Prev / page-number / Next controls below the grid.
+function renderPagination(totalPages) {
+    const paginationContainer = document.getElementById("pagination");
+    if (!paginationContainer) return;
+
+    paginationContainer.innerHTML = "";
+
+    // Nothing to paginate: 0 or 1 page.
+    if (totalPages <= 1) return;
+
+    const goToPage = (page) => {
+        currentPage = page;
+        renderSpacesPage();
+        window.scrollTo({ top: document.querySelector(".itens-list").offsetTop - 20, behavior: "smooth" });
+    };
+
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "‹ Prev";
+    prevBtn.className = "pagination-btn";
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener("click", () => goToPage(currentPage - 1));
+    paginationContainer.appendChild(prevBtn);
+
+    for (let page = 1; page <= totalPages; page++) {
+        const pageBtn = document.createElement("button");
+        pageBtn.textContent = page;
+        pageBtn.className = "pagination-btn" + (page === currentPage ? " active" : "");
+        pageBtn.addEventListener("click", () => goToPage(page));
+        paginationContainer.appendChild(pageBtn);
+    }
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Next ›";
+    nextBtn.className = "pagination-btn";
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener("click", () => goToPage(currentPage + 1));
+    paginationContainer.appendChild(nextBtn);
 }
 
 
@@ -164,6 +232,7 @@ document.addEventListener("DOMContentLoaded", function() {
             `;
 
             document.body.appendChild(filterForm);
+            filterForm.style.display = "block"; // Show it right away - it's created hidden by default via CSS
 
         } else {
             filterForm.style.display = "block";

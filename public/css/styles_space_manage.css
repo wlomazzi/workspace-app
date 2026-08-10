@@ -111,52 +111,82 @@ fieldset {
     border-radius: 5px;
 }
 
-/* Checkboxes container */
+/* Amenities container - icon toggle chips */
 .amenities-container {
     display: flex;
-    flex-direction:row;
-    gap: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-/* Adjust to align checkboxes with text */
-.amenities-container label {
+/* Each amenity is an icon "chip" the user clicks to toggle on/off */
+.amenity-chip {
+    position: relative;
     display: flex;
-    align-items: center; /* Centers vertically */
-    gap: 10px; /* Space between checkbox and text */
-    font-size: 16px;
-    cursor: pointer;
-}
-
-/* Adjusting the size and position of the checkbox */
-.amenities-container input[type="checkbox"] {
-    appearance: none; /* Remove default browser style */
-    width: 18px;
-    height: 18px;
-    border: 2px solid #007bff;
-    border-radius: 3px;
-    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+    width: 88px;
+    padding: 12px 8px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+}
+
+.amenity-chip:hover {
+    border-color: #a9cbff;
+    transform: translateY(-1px);
+}
+
+/* Hide the native checkbox but keep it accessible (covers the whole chip for click/keyboard) */
+.amenity-chip input[type="checkbox"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
     cursor: pointer;
 }
 
-/* Styles the checkbox when checked */
-.amenities-container input[type="checkbox"]:checked {
-    background-color: #007bff;
-    border-color: #007bff;
-    position: relative;
+.amenity-chip img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    filter: grayscale(100%) opacity(0.55);
+    transition: filter 0.2s ease;
+    pointer-events: none;
 }
 
-/* Add a chack (✔️) in checkbox */
-.amenities-container input[type="checkbox"]:checked::after {
-    content: "✔";
-    font-size: 14px;
-    color: white;
-    font-weight: bold;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.amenity-chip span {
+    font-size: 12px;
+    line-height: 1.2;
+    color: #666;
+    pointer-events: none;
+}
+
+/* Checked state: full-color icon + highlighted chip */
+.amenity-chip input[type="checkbox"]:checked ~ img {
+    filter: none;
+}
+
+.amenity-chip input[type="checkbox"]:checked ~ span {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.amenity-chip:has(input[type="checkbox"]:checked) {
+    border-color: #007bff;
+    background: #eaf3ff;
+}
+
+.amenity-chip:has(input[type="checkbox"]:focus-visible) {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
 }
 
 
@@ -300,4 +330,80 @@ fieldset {
     justify-content: center;
     gap: 15px;
     margin-top: 20px;
+}
+
+/* Save success confirmation modal ------------------------------------------------------------------------------- */
+.save-success-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #00000080;
+    align-items: center;
+    justify-content: center;
+}
+
+.save-success-modal.open {
+    display: flex;
+}
+
+.save-success-modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 14px;
+    padding: 32px 28px 26px;
+    text-align: center;
+    box-shadow: 0 12px 32px #00000033;
+    font-family: sans-serif;
+    animation: save-success-pop 0.2s ease-out;
+}
+
+@keyframes save-success-pop {
+    from { transform: scale(0.94); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.save-success-modal-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: #e3f6ea;
+    color: #1fa855;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.save-success-modal-content h3 {
+    margin: 0 0 10px;
+    font-size: 19px;
+    color: #222;
+}
+
+.save-success-modal-content p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0 0 24px;
+}
+
+.save-success-modal-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.save-success-modal-btn:hover {
+    background: #0056b3;
 }

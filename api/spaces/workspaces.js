@@ -329,17 +329,19 @@ router.post("/insert", async (req, res) => {
             active
         };
 
-        // Update the workspace record in Supabase
+        // Insert the workspace record in Supabase (.select() so we get the new row, including its id, back)
         const { data, error } = await supabase
             .from('workspaces')
-            .insert(insertWorkspaceData);
+            .insert(insertWorkspaceData)
+            .select()
+            .single();
 
         if (error) {
             console.error('Error inserting workspace:', error);
             return res.status(500).json({ error: 'Failed to insert workspace' });
         }
 
-        // Return success message with the updated data
+        // Return success message with the newly created workspace (front-end needs data.id to upload images)
         return res.status(200).json({ success: true, insertWorkspaceData: data });
 
     } catch (error) {
@@ -492,8 +494,11 @@ router.post("/upload_image", upload.single("file"), async (req, res) => {
             return res.status(500).json({ success: false, message: `Failed to upload image ${image_code}` });
         }
 
-        // Construct the public URL for the uploaded image
-        const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/workspaces/spaces/${imageName}`;
+        // Construct the public URL for the uploaded image. A cache-busting query param is
+        // appended because the storage path is always the same for a given space_id/image_code
+        // (upsert overwrites it) - without this, browsers/CDN keep serving the old cached image
+        // after a re-upload since the URL itself never changes.
+        const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/workspaces/spaces/${imageName}?v=${Date.now()}`;
 
         // Update the image field in the 'workspaces' table
         const updatedImageField = {};

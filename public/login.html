@@ -24,13 +24,16 @@
 
     <form id="loginForm">
         <h2>Login</h2>
+
+        <p id="loginError" class="form-error" hidden></p>
+
         <label for="user_login">Username:</label>
-        <input type="text" id="user_login" name="user_login" required>
+        <input type="text" id="user_login" name="user_login" required autocomplete="username">
 
         <label for="user_password">Password:</label>
-        <input type="password" id="user_password" name="user_password" required>
+        <input type="password" id="user_password" name="user_password" required autocomplete="current-password">
 
-        <button type="submit">Login</button>
+        <button type="submit" id="loginSubmitBtn">Login</button>
     </form>
 
     <footer>

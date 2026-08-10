@@ -1,5 +1,6 @@
 import express from 'express';
 import { supabase } from '../../lib/supabase.js';  // Import the Supabase client
+import { createClient } from '@supabase/supabase-js';
 import multer from 'multer';  // Importing multer using ES Module
 import jwt from 'jsonwebtoken';
 
@@ -218,6 +219,69 @@ router.post("/profile_update", async (req, res) => {
 
 
 
+// Route to change the logged-in user's password.
+// Best practice: require the current password again (re-authentication) before allowing the
+// change, so an unattended/stolen session token alone isn't enough to lock the real owner out.
+router.post("/change_password", async (req, res) => {
+    const { email, current_password, new_password } = req.body;
+
+    if (!email || !current_password || !new_password) {
+        return res.status(400).json({ error: 'Email, current password and new password are required' });
+    }
+
+    if (new_password.length < 6) {
+        return res.status(400).json({ error: 'The new password must be at least 6 characters long' });
+    }
+
+    if (new_password === current_password) {
+        return res.status(400).json({ error: 'The new password must be different from the current password' });
+    }
+
+    try {
+        // Step 1: confirm the current password is actually correct by performing a real sign-in.
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password: current_password,
+        });
+
+        if (signInError || !signInData?.session) {
+            return res.status(401).json({ error: 'Current password is incorrect' });
+        }
+
+        // Step 2: use that freshly-verified session to update the password. A short-lived client
+        // scoped to the user's own session is used here - not the service_role key - so this only
+        // ever has permission to modify the account that was just re-authenticated.
+        // Note: auth.updateUser() relies on the client's internal session state, not just the
+        // Authorization header, so the session has to be set explicitly via setSession().
+        const userClient = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+        const { error: setSessionError } = await userClient.auth.setSession({
+            access_token: signInData.session.access_token,
+            refresh_token: signInData.session.refresh_token,
+        });
+
+        if (setSessionError) {
+            console.error('Error setting session for password update:', setSessionError);
+            return res.status(500).json({ error: 'Could not verify your session. Please try again.' });
+        }
+
+        const { error: updateError } = await userClient.auth.updateUser({ password: new_password });
+
+        if (updateError) {
+            console.error('Error updating password:', updateError);
+            return res.status(500).json({ error: updateError.message });
+        }
+
+        return res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.error('Server error changing password:', error);
+        return res.status(500).json({ error: 'An unexpected error occurred' });
+    }
+});
+
+
+
 // Route to upload profile image
 router.post("/profile_picture", upload.single("file"), async (req, res) => {
     const authToken    = req.headers['authorization']?.split(' ')[1];  // 'Bearer <token>'
@@ -266,7 +330,10 @@ router.post("/profile_picture", upload.single("file"), async (req, res) => {
         }
 
         // Build the public URL from the current project's SUPABASE_URL (filePath already includes 'avatars/')
-        const avatarUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/workspaces/${filePath}`;
+        // Cache-busting query param: the storage path is always the same for a given user_id
+        // (upsert overwrites it), so without this the browser/CDN would keep showing the old
+        // cached photo after re-uploading a new one.
+        const avatarUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/workspaces/${filePath}?v=${Date.now()}`;
 
         // Update profile picture in the 'profiles' table
         const { data: dtProfile, error: errProfile } = await supabase

@@ -157,6 +157,68 @@ hr {
     background-color: #0056b3;
 }
 
+/* Change Password section --------------------------------------------------------------------- */
+.security-toggle-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    padding: 8px 2px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+}
+
+.security-toggle-icon {
+    transition: transform 0.2s ease;
+}
+
+.security-toggle-btn[aria-expanded="true"] .security-toggle-icon {
+    transform: rotate(180deg);
+}
+
+.password-section {
+    margin-top: 10px;
+    padding-top: 6px;
+}
+
+.password-message {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.password-message.error {
+    background: #fdecea;
+    color: #b3261e;
+    border: 1px solid #f5c2c0;
+}
+
+.password-message.success {
+    background: #e3f6ea;
+    color: #16793f;
+    border: 1px solid #b7e6c7;
+}
+
+.password-update-btn {
+    background: #1f2d40;
+}
+
+.password-update-btn:hover {
+    background: #14202f;
+}
+
+.password-update-btn:disabled,
+.update-btn:disabled {
+    background: #9fb3c8;
+    cursor: not-allowed;
+}
+
 /* Responsiveness */
 @media (max-width: 768px) {
     .profile-update-container {

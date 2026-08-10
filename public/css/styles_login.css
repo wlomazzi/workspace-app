@@ -40,6 +40,22 @@
 #loginForm button:hover {
     background: #0056b3;
 }
+
+#loginForm button:disabled {
+    background: #6ea8e0;
+    cursor: not-allowed;
+}
+
+.form-error {
+    background: #fdecea;
+    color: #b3261e;
+    border: 1px solid #f5c2c0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin: 0 0 10px;
+    line-height: 1.4;
+}
 /* END Configuration for login form ----------------------------------------------------------------------- */
 
 

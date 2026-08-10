@@ -45,13 +45,37 @@
                 </div>
 
                 <!-- Message below checkboxes -->
-                <div id="message" style="margin-top: 20px; color: #ff00009a;"></div>                
+                <div id="message" style="margin-top: 20px; color: #ff00009a;"></div>
 
                 <button class="update-btn" id="updateProfile">Update Profile</button>
+
+                <!-- Change Password section -->
+                <hr>
+                <button type="button" class="security-toggle-btn" id="togglePasswordSection" aria-expanded="false">
+                    <span>Change Password</span>
+                    <svg class="security-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m6 9 6 6 6-6"></path>
+                    </svg>
+                </button>
+
+                <div class="password-section" id="passwordSection" hidden>
+                    <label for="current-password">Current Password:</label>
+                    <input type="password" id="current-password" autocomplete="current-password">
+
+                    <label for="new-password">New Password:</label>
+                    <input type="password" id="new-password" autocomplete="new-password" minlength="6">
+
+                    <label for="confirm-new-password">Confirm New Password:</label>
+                    <input type="password" id="confirm-new-password" autocomplete="new-password" minlength="6">
+
+                    <div id="passwordMessage" class="password-message" hidden></div>
+
+                    <button class="update-btn password-update-btn" id="updatePassword">Update Password</button>
+                </div>
             </div>
         </div>
     </div>
-    
+
     <script src="/scripts/user_profile_update.js"></script>
 </body>
 </html>

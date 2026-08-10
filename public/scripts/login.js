@@ -1,20 +1,42 @@
-const user = localStorage.getItem('access_token');
-
-if (user) {
-    // User is logged in, can send the token to the server or do other actions
-    alert('User is loged in');
-    console.log('User is Logged in - ID: ', user.user_id);
-    window.location.href = 'index.html'; // Redirect to the homepage
+// If the user already has a valid session token, skip the login page entirely.
+// No blocking alert here - a silent redirect is the expected behavior for "already logged in".
+const existingToken = localStorage.getItem('access_token');
+if (existingToken) {
+    window.location.href = 'index.html';
 }
 
-
-// This script handles the login functionality for the user interface. It captures the form submission, 
+// This script handles the login functionality for the user interface. It captures the form submission,
 // sends the login credentials to the server, and handles the response.
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
+const loginForm = document.getElementById('loginForm');
+const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+const loginError = document.getElementById('loginError');
+
+function showLoginError(message) {
+    loginError.textContent = message;
+    loginError.hidden = false;
+}
+
+function hideLoginError() {
+    loginError.hidden = true;
+    loginError.textContent = '';
+}
+
+loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById('user_login').value;
+    hideLoginError();
+
+    const email = document.getElementById('user_login').value.trim();
     const password = document.getElementById('user_password').value;
+
+    if (!email || !password) {
+        showLoginError('Please enter your username and password.');
+        return;
+    }
+
+    // Disable the button and show a loading state to prevent duplicate submits
+    loginSubmitBtn.disabled = true;
+    loginSubmitBtn.textContent = 'Logging in...';
 
     try {
         const response = await fetch('/api/users/user_login', {
@@ -22,30 +44,29 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                email,
-                password,
-            }),
+            body: JSON.stringify({ email, password }),
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            // Login successful
-            alert("Login successful! You wiil be redirected to the homepage.");
-            //console.log(data); // Here you can see the user data returned from the server and redirect to index.html
-            // Save the access token and user ID in localStorage
+            // Save the access token and user ID, then redirect straight to the homepage.
+            // No blocking alert - the redirect itself is enough feedback.
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('user_id', data.user.id);
             localStorage.setItem('user_email', data.user.email);
 
-            window.location.href = 'index.html'; 
+            loginSubmitBtn.textContent = 'Success! Redirecting...';
+            window.location.href = 'index.html';
         } else {
-            // Shows the error message returned by the API
-            alert(data.error || 'Login failed. Please try again.');
+            showLoginError(data.error || 'Login failed. Please check your credentials and try again.');
+            loginSubmitBtn.disabled = false;
+            loginSubmitBtn.textContent = 'Login';
         }
     } catch (error) {
-        console.error('Login error, please try again.', error);
-        alert('An unexpected error occurred. Please try again later.');
+        console.error('Login error:', error);
+        showLoginError('An unexpected error occurred. Please try again later.');
+        loginSubmitBtn.disabled = false;
+        loginSubmitBtn.textContent = 'Login';
     }
 });

@@ -1,66 +1,62 @@
 const user = localStorage.getItem('user_id');
 
-if (user) {
-    // User is logged in, can send the token to the server or do other actions
-    //console.log('Users is logged - ID: ', user);
-} else {
-    // User is not logged in
-    alert("User is not logged in. Please log in to access this page.");
-    // Redirect to login page or show a message
-    window.location.href = 'login.html'; // Uncomment this line to redirect to login page
-    console.log('User is not logged in');
+// Shared inline feedback area (below the role checkboxes). Green for success, red for errors.
+// Replaces every alert() on this page with non-blocking, in-page messages.
+function showMessage(text, type = 'error', autoHideMs = null) {
+    const messageDiv = document.getElementById("message");
+    if (!messageDiv) return;
+
+    messageDiv.textContent = text;
+    messageDiv.style.color = type === 'success' ? '#1fa855' : '#ff00009a';
+
+    if (autoHideMs) {
+        setTimeout(function () {
+            if (messageDiv.textContent === text) messageDiv.textContent = '';
+        }, autoHideMs);
+    }
 }
 
+function clearMessage() {
+    const messageDiv = document.getElementById("message");
+    if (messageDiv) messageDiv.textContent = '';
+}
+
+if (!user) {
+    // No blocking alert - just send the user to the login page.
+    window.location.href = 'login.html';
+}
 
 document.addEventListener("DOMContentLoaded", function () {
-    if (user) {
+    if (!user) return;
 
-        const userId         = localStorage.getItem('user_id');  // Get the user ID from localStorage
-        const userEmail      = localStorage.getItem('user_email');  // Get the user's email from localStorage
-        const userPhone      = localStorage.getItem('user_phone');  // Get the user's phone from localStorage
-        const userLocation   = localStorage.getItem('user_location');  // Get the user's location from localStorage
-        const userFullName   = localStorage.getItem('user_fullname');  // Get the full name of the localStorage user
-        const userProfilePic = localStorage.getItem('user_picture');  // Get the username avatar from localStorage
-        const userIsOwner    = localStorage.getItem('user_owner');  // Check if the user is an owner
-        const userIsCoworker = localStorage.getItem('user_coworker');  // Check if the user is a coworker
+    const userEmail      = localStorage.getItem('user_email');  // Get the user's email from localStorage
+    const userPhone      = localStorage.getItem('user_phone');  // Get the user's phone from localStorage
+    const userLocation   = localStorage.getItem('user_location');  // Get the user's location from localStorage
+    const userFullName   = localStorage.getItem('user_fullname');  // Get the full name of the localStorage user
+    const userProfilePic = localStorage.getItem('user_picture');  // Get the username avatar from localStorage
+    const userIsOwner    = localStorage.getItem('user_owner');  // Check if the user is an owner
+    const userIsCoworker = localStorage.getItem('user_coworker');  // Check if the user is a coworker
 
-        // Populate the fields with the logged-in user's data
-        document.getElementById("user-fullName").value = userFullName;
-        document.getElementById("user-email").value = userEmail;
-        document.getElementById("user-phone").value = userPhone;
-        document.getElementById("user-location").value = userLocation;
-        document.getElementById("profile-pic").src = userProfilePic;
+    // Populate the fields with the logged-in user's data
+    document.getElementById("user-fullName").value = userFullName;
+    document.getElementById("user-email").value = userEmail;
+    document.getElementById("user-phone").value = userPhone;
+    document.getElementById("user-location").value = userLocation;
+    document.getElementById("profile-pic").src = userProfilePic;
 
-        document.getElementById("is_owner").checked = (userIsOwner === 'true');
-        //document.getElementById("is_coworker").checked = (userIsCoworker === 'true');        
+    document.getElementById("is_owner").checked = (userIsOwner === 'true');
 
-        // For Coworker, ensure it cannot be unchecked
-        const coworkerCheckbox = document.getElementById("is_coworker");
-        coworkerCheckbox.checked = (userIsCoworker === 'true');
+    // For Coworker, ensure it cannot be unchecked
+    const coworkerCheckbox = document.getElementById("is_coworker");
+    coworkerCheckbox.checked = (userIsCoworker === 'true');
 
-        // Prevent unchecking coworker checkbox
-        coworkerCheckbox.addEventListener('change', function() {
-            if (!this.checked) {
-                this.checked = true;  // Re-check the checkbox if it gets unchecked
-
-                // Show message below the checkboxes
-                const messageDiv = document.getElementById("message");
-                messageDiv.innerHTML = "The 'Coworker' profile is the default and cannot be unchecked. However, you can select the 'Owner' profile if applicable.";
-
-                // Make the message disappear after 10 seconds
-                setTimeout(function() {
-                    messageDiv.innerHTML = ''; // Clears the message
-                }, 10000);  // 10000 milliseconds = 10 seconds
-            }
-        });      
-
-        // Add an event listener for the Update Profile button
-//        document.getElementById("updateProfile").addEventListener("click", updateProfile);
-    } else {
-        // If no user data is found, redirect to login
-        alert("You need to log in to edit your profile.");
-        window.location.href = "login.html";
-    }
+    // Prevent unchecking coworker checkbox
+    coworkerCheckbox.addEventListener('change', function() {
+        if (!this.checked) {
+            this.checked = true;  // Re-check the checkbox if it gets unchecked
+            showMessage("The 'Coworker' profile is the default and cannot be unchecked. However, you can select the 'Owner' profile if applicable.", 'error', 10000);
+        }
+    });
 });
 
 
@@ -75,13 +71,7 @@ document.getElementById("user-phone").addEventListener("blur", function(event) {
         // Formats the number in the format (999) 999-9999
         phone = phone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
     } else {
-        // If the number is not the correct size, leave it empty. Show message below the checkboxes
-        const messageDiv = document.getElementById("message");
-        messageDiv.innerHTML = "Invalid phone number!";
-        // Make the message disappear after 5 seconds
-        setTimeout(function() {
-            messageDiv.innerHTML = ''; // Clears the message
-        }, 5000);  // 5000 milliseconds = 5 seconds
+        showMessage("Invalid phone number!", 'error', 5000);
         phone = "";
     }
 
@@ -90,13 +80,14 @@ document.getElementById("user-phone").addEventListener("blur", function(event) {
 });
 
 
-
-
-
 // Add an event listener to the "Update Profile" button
-document.getElementById("updateProfile").addEventListener("click", async function () {
+const updateProfileBtn = document.getElementById("updateProfile");
+
+updateProfileBtn.addEventListener("click", async function () {
+    clearMessage();
+
     // Collect the form data
-    const user_id   = user;  // Ensure `user` variable is defined correctly
+    const user_id   = user;
     const fullName  = document.getElementById("user-fullName").value;
     const phone     = document.getElementById("user-phone").value;
     const location  = document.getElementById("user-location").value;
@@ -104,26 +95,29 @@ document.getElementById("updateProfile").addEventListener("click", async functio
 
     // Validate if all required fields are filled
     if (!fullName || !phone || !location) {
-        alert("Please fill out all the required fields.");
+        showMessage("Please fill out all the required fields.");
         return;
     }
 
     // Validate if the user is logged in (check JWT or localStorage)
     const access_token = localStorage.getItem('access_token');
     if (!access_token) {
-        alert("You need to be logged in to update the profile.");
+        showMessage("Your session has expired. Please log in again.");
         return;
     }
 
     // Prepare the data to send
     const profileData = {
-        user_id: user_id,  // The user's ID
+        user_id: user_id,
         full_name: fullName,
         location: location,
         phone: phone,
-        is_owner: isOwner,  // Pass the value of the 'Owner' checkbox
+        is_owner: isOwner,
         is_coworker: true  // Always set to TRUE as per the request
     };
+
+    updateProfileBtn.disabled = true;
+    updateProfileBtn.textContent = "Saving...";
 
     try {
         // Send the updated data to the backend
@@ -131,62 +125,129 @@ document.getElementById("updateProfile").addEventListener("click", async functio
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${access_token}`,  // Pass the JWT token in the header
+                'Authorization': `Bearer ${access_token}`,
             },
-            body: JSON.stringify(profileData)  // Send the profile data in the body of the request
+            body: JSON.stringify(profileData)
         });
 
         const result = await response.json();
 
         if (response.ok && result.success) {
-            // If the update is successful
-            alert("Profile updated successfully.");
-            console.log('result:', result);
+            // Keep localStorage in sync with what was just saved
+            localStorage.setItem('user_fullname', fullName);
+            localStorage.setItem('user_phone', phone);
+            localStorage.setItem('user_location', location);
+            localStorage.setItem('user_owner', isOwner);
+            localStorage.setItem('user_coworker', true);
 
-            // Update localStorage with the new data
-            const updatedUserData = {
-                ...profileData,  // Include all updated data
-                profilePic: user.profilePic // Optionally, update profile picture if needed
-            };
+            showMessage("Profile updated successfully.", 'success');
+            updateProfileBtn.textContent = "Saved!";
 
-            // Update localStorage with the new data
-            localStorage.setItem("loggedUser", JSON.stringify(updatedUserData));
-
-            // Optionally, update sessionStorage as well
-            //sessionStorage.setItem("loggedUser", JSON.stringify(updatedUserData));
-
-            // Update the fields on the page with the new data
-            updateProfileFields(updatedUserData);
-
-            // Redirection after updating fields (no page refresh needed)
-            window.location.href = "user_profile.html"; // Redirect to the user profile page
+            // Brief pause so the success message is actually visible before navigating away
+            setTimeout(function () {
+                window.location.href = "user_profile.html";
+            }, 700);
         } else {
-            alert("Failed to update the profile: " + (result.message || "Try again."));
+            showMessage("Failed to update the profile: " + (result.message || "Please try again."));
+            updateProfileBtn.disabled = false;
+            updateProfileBtn.textContent = "Update Profile";
         }
     } catch (error) {
         console.error("Error updating profile:", error);
-        alert("An error occurred while updating the profile.");
+        showMessage("An error occurred while updating the profile. Please try again.");
+        updateProfileBtn.disabled = false;
+        updateProfileBtn.textContent = "Update Profile";
     }
 });
 
-// Function to update the fields on the page with the new data
-function updateProfileFields(updatedUserData) {
-    // Update the form fields on the page with the new values
-    document.getElementById("user-fullName").value = updatedUserData.full_name;
-    document.getElementById("user-phone").value = updatedUserData.phone;
-    document.getElementById("user-location").value = updatedUserData.location;
 
-    // Optionally update the profile picture if it was changed
-    if (updatedUserData.profilePic) {
-        document.getElementById("profile-pic").src = updatedUserData.profilePic;
-    }
+// CHANGE PASSWORD -----------------------------------------------------------------------------
+const toggleBtn = document.getElementById("togglePasswordSection");
+const passwordSection = document.getElementById("passwordSection");
+const passwordMessage = document.getElementById("passwordMessage");
+const updatePasswordBtn = document.getElementById("updatePassword");
+
+function showPasswordMessage(text, type = 'error') {
+    passwordMessage.textContent = text;
+    passwordMessage.className = `password-message ${type}`;
+    passwordMessage.hidden = false;
 }
 
+function clearPasswordMessage() {
+    passwordMessage.hidden = true;
+    passwordMessage.textContent = '';
+}
 
+if (toggleBtn && passwordSection) {
+    toggleBtn.addEventListener("click", function () {
+        const isOpen = !passwordSection.hidden;
+        passwordSection.hidden = isOpen;
+        toggleBtn.setAttribute("aria-expanded", String(!isOpen));
+    });
+}
 
+if (updatePasswordBtn) {
+    updatePasswordBtn.addEventListener("click", async function () {
+        clearPasswordMessage();
 
+        const currentPassword = document.getElementById("current-password").value;
+        const newPassword = document.getElementById("new-password").value;
+        const confirmNewPassword = document.getElementById("confirm-new-password").value;
+        const email = localStorage.getItem('user_email');
 
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            showPasswordMessage("Please fill in all password fields.");
+            return;
+        }
 
+        if (newPassword.length < 6) {
+            showPasswordMessage("The new password must be at least 6 characters long.");
+            return;
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            showPasswordMessage("New password and confirmation do not match.");
+            return;
+        }
+
+        if (newPassword === currentPassword) {
+            showPasswordMessage("The new password must be different from the current password.");
+            return;
+        }
+
+        updatePasswordBtn.disabled = true;
+        updatePasswordBtn.textContent = "Updating...";
+
+        try {
+            const response = await fetch('/api/users/user_login/change_password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email,
+                    current_password: currentPassword,
+                    new_password: newPassword
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                showPasswordMessage("Password updated successfully.", 'success');
+                document.getElementById("current-password").value = "";
+                document.getElementById("new-password").value = "";
+                document.getElementById("confirm-new-password").value = "";
+            } else {
+                showPasswordMessage(result.error || "Failed to update password. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error changing password:", error);
+            showPasswordMessage("An error occurred while updating the password. Please try again.");
+        } finally {
+            updatePasswordBtn.disabled = false;
+            updatePasswordBtn.textContent = "Update Password";
+        }
+    });
+}
 
 
 // JavaScript to handle image upload
@@ -198,57 +259,59 @@ document.getElementById("profile-pic").addEventListener("click", function () {
 
 document.getElementById("fileInput").addEventListener("change", async function (event) {
     const file = event.target.files[0];
+    if (!file) return;
 
-    if (file) {
-        // Ensure the user is logged in
-//        const user = JSON.parse(sessionStorage.getItem("loggedUser"));
-        if (!user) {
-            alert("You must be logged in to upload an image.");
-            return;
+    clearMessage();
+
+    if (!user) {
+        showMessage("You must be logged in to upload an image.");
+        return;
+    }
+
+    // Check if the file is an image
+    if (!file.type.startsWith('image/')) {
+        showMessage("Please select a valid image file.");
+        return;
+    }
+
+    const access_token = localStorage.getItem('access_token');
+    if (!access_token) {
+        showMessage("Your session has expired. Please log in again.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("user_id", user);
+    formData.append("file", file);
+
+    const profilePicElement = document.getElementById("profile-pic");
+    const previousSrc = profilePicElement.src;
+    profilePicElement.style.opacity = "0.5"; // subtle loading feedback on the avatar itself
+
+    try {
+        const response = await fetch("/api/users/user_login/profile_picture", {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${access_token}`,
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            profilePicElement.src = result.avatar_url;
+            localStorage.setItem('user_picture', result.avatar_url);
+            showMessage("Profile photo updated.", 'success', 4000);
+        } else {
+            profilePicElement.src = previousSrc;
+            showMessage("Failed to update profile picture.");
         }
-
-        // Check if the file is an image
-        if (!file.type.startsWith('image/')) {
-            alert('Please select a valid image file.');
-            return;
-        }
-
-        // Create a FormData to send the file
-        const formData = new FormData();
-        formData.append("user_id", user);  // Send the user ID
-        formData.append("file", file);  // Enviar o arquivo
-
-        // Get the JWT token from localStorage
-        const access_token = localStorage.getItem('access_token');
-        if (!access_token) {
-            alert("Authentication token not found.");
-            return;
-        }
-
-        try {
-            // Send the file to the backend
-            const response = await fetch("/api/users/user_login/profile_picture", {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${access_token}`,  // Pass the JWT token in the header
-                },
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Update the profile picture on the page with the new URL
-                document.getElementById("profile-pic").src = result.avatar_url;
-                localStorage.setItem('user_picture', result.avatar_url);
-                alert("Profile image updated successfully.");
-            } else {
-                alert("Failed to update profile picture.");
-            }
-        } catch (error) {
-            console.error("Error uploading image:", error);
-            alert("An error occurred while uploading the image.");
-        }
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        profilePicElement.src = previousSrc;
+        showMessage("An error occurred while uploading the image.");
+    } finally {
+        profilePicElement.style.opacity = "1";
     }
 });
-

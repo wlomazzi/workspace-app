@@ -89,13 +89,41 @@
         <fieldset>
             <legend>Amenities</legend>
             <div class="amenities-container">
-                <label><input type="checkbox" id="amn_kitchen" name="kitchen" value="true"> Kitchen</label>
-                <label><input type="checkbox" id="amn_parking" name="parking" value="true"> Parking</label>
-                <label><input type="checkbox" id="amn_public_transport" name="public_transport" value="true"> Public Transport</label>
-                <label><input type="checkbox" id="amn_wifi" name="wifi" value="true"> Wi-Fi</label>
-                <label><input type="checkbox" id="amn_printer" name="printer" value="true"> Printer</label>
-                <label><input type="checkbox" id="amn_air" name="air" value="true"> Air Conditioning</label>
-                <label><input type="checkbox" id="amn_smoking" name="smoking" value="true"> Smoking</label>
+                <label class="amenity-chip">
+                    <input type="checkbox" id="amn_kitchen" name="kitchen" value="true">
+                    <img src="/images/icon-kitchen.png" alt="">
+                    <span>Kitchen</span>
+                </label>
+                <label class="amenity-chip">
+                    <input type="checkbox" id="amn_parking" name="parking" value="true">
+                    <img src="/images/icon-parking.png" alt="">
+                    <span>Parking</span>
+                </label>
+                <label class="amenity-chip">
+                    <input type="checkbox" id="amn_public_transport" name="public_transport" value="true">
+                    <img src="/images/icon-public-transport.png" alt="">
+                    <span>Public Transport</span>
+                </label>
+                <label class="amenity-chip">
+                    <input type="checkbox" id="amn_wifi" name="wifi" value="true">
+                    <img src="/images/icon-wifi.png" alt="">
+                    <span>Wi-Fi</span>
+                </label>
+                <label class="amenity-chip">
+                    <input type="checkbox" id="amn_printer" name="printer" value="true">
+                    <img src="/images/icon-printer.png" alt="">
+                    <span>Printer</span>
+                </label>
+                <label class="amenity-chip">
+                    <input type="checkbox" id="amn_air" name="air" value="true">
+                    <img src="/images/icon-air-conditioner.png" alt="">
+                    <span>Air Conditioning</span>
+                </label>
+                <label class="amenity-chip">
+                    <input type="checkbox" id="amn_smoking" name="smoking" value="true">
+                    <img src="/images/icon-smoke.png" alt="">
+                    <span>Smoking</span>
+                </label>
             </div>
         </fieldset>
 
@@ -122,7 +150,21 @@
             <h3>Select the correct address:</h3>
             <ul id="addressList" style="list-style: none; padding-left: 0;"></ul>
         </div>
-    </div>    
+    </div>
+
+    <!-- Save success confirmation modal -->
+    <div id="saveSuccessModal" class="save-success-modal">
+        <div class="save-success-modal-content">
+            <div class="save-success-modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+            </div>
+            <h3 id="saveSuccessModalTitle">Workspace saved</h3>
+            <p id="saveSuccessModalMessage">Your changes were saved successfully.</p>
+            <button id="saveSuccessModalBtn" class="save-success-modal-btn">Back to my spaces</button>
+        </div>
+    </div>
 
 </body>
 </html>

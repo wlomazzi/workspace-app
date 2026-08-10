@@ -23,20 +23,23 @@
 
     <form id="registerForm">
         <h2>Create an Account</h2>
+
+        <p id="registerError" class="form-error" hidden></p>
+
         <!--
         <label for="user_id">User fullname:</label>
         <input type="text" id="user_fullname" name="user_fullname" required>
         -->
         <label for="user_id">User email:</label>
-        <input type="email" id="user_login" name="user_login" required>
+        <input type="email" id="user_login" name="user_login" required autocomplete="email">
 
         <label for="user_password">Password:</label>
-        <input type="password" id="user_password" name="user_password" required>
+        <input type="password" id="user_password" name="user_password" required minlength="6" autocomplete="new-password">
 
         <label for="user_password_repeat">Repeat Password:</label>
-        <input type="password" id="user_password_repeat" name="user_password_repeat" required>
+        <input type="password" id="user_password_repeat" name="user_password_repeat" required minlength="6" autocomplete="new-password">
 
-        <button type="submit">Sign Up</button>
+        <button type="submit" id="registerSubmitBtn">Sign Up</button>
     </form>
 
     <footer>

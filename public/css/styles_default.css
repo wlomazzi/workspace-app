@@ -142,15 +142,35 @@ body {
 
 .itens-list {
     /*text-align: left;*/
+    width: 75%;         /* Same width as .search-bar, so the grid lines up with it */
+    margin: 0 auto;
     padding: 5px;
 }
 
 .spaces {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Always 4 cards per row on desktop */
+    gap: 20px;
     text-align: left;
-    gap: 10px;
+}
+
+/* Responsive: fewer columns as the viewport shrinks, instead of cards overflowing/wrapping unevenly */
+@media (max-width: 1100px) {
+    .spaces {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 820px) {
+    .spaces {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 520px) {
+    .spaces {
+        grid-template-columns: 1fr;
+    }
 }
 
 
@@ -160,17 +180,59 @@ body {
     padding: 10px;
     border-radius: 10px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    width: 250px;
+    width: 100%;
     text-align: left;
     cursor: pointer;
 }
 
-  
+
 /* Configuration for the image in the box item  */
 .space img {
-    width: 230px; /* Define image width */
-    height: 230px; /* Define image height */
+    width: 100%;    /* Fill the card's width, whatever that ends up being at each breakpoint */
+    height: 200px;
+    object-fit: cover; /* Crop instead of distorting non-square photos */
     border-radius: 10px;
+}
+
+
+/* Pagination controls below the grid --------------------------------------------------------- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 30px auto;
+}
+
+.pagination-btn {
+    min-width: 38px;
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    border-color: #ff385c;
+    color: #ff385c;
+}
+
+.pagination-btn.active {
+    background: #ff385c;
+    border-color: #ff385c;
+    color: #fff;
+    font-weight: bold;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 
