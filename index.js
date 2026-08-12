@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();  // Load environment variables from the .env file
 
 
-// Importando a nova API
+// Importing the API routers
 import workspacesRouter from './api/spaces/workspaces.js';  // Importing the workspaces router
 import loginRouter from './api/users/user_login.js';  // Importing the login router
 import reviewsRouter from './api/reviews/reviews.js';  // Importing the reviews router
@@ -36,6 +36,17 @@ app.use('/api/reviews', reviewsRouter);  // Mounting the routes from reviews.js 
 // Rout to serve the index.html file
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve the index.html file from the public folder
+});
+
+// Public, non-secret config the frontend needs to talk to Supabase directly for the one flow
+// that requires it (completing a password reset - see reset_password.js). SUPABASE_KEY here is
+// the anon/publishable key, which is meant to be public (it's already embedded in every image
+// URL the app serves) - this is not the service_role key and never will be.
+app.get('/api/config', (req, res) => {
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_KEY
+  });
 });
 
 // Start the server on the defined port

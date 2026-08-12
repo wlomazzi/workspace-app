@@ -7,6 +7,7 @@
     <link rel="stylesheet" href= "/components/navbar.css">
     <link rel="stylesheet" href= "/components/footer.css">
     <link rel="stylesheet" href= "/css/styles_space_manage.css">
+    <script defer src="/scripts/auth-fetch.js"></script>
     <script defer src="/components/navbar.js"></script>
     <script defer src="/components/footer.js"></script>
 </head>
@@ -82,10 +83,17 @@
         <label for="lease_time">Lease time:</label>
         <select id="lease_time" name="lease_time">
             <option value="day">Day</option>
-            <option value="week">Week</option>
-            <option value="month">Month</option>
+            <option value="hour">Hour</option>
         </select>
-        
+
+        <div id="hourWindowFields" style="display:none;">
+            <label for="open_hour">Opening hour:</label>
+            <select id="open_hour" name="open_hour"></select>
+
+            <label for="close_hour">Closing hour:</label>
+            <select id="close_hour" name="close_hour"></select>
+        </div>
+
         <fieldset>
             <legend>Amenities</legend>
             <div class="amenities-container">

@@ -161,12 +161,164 @@
     background: #d02d4e; /* Darker color on mouseover */
 }
 
+.confirm-btn:disabled {
+    background: #f3a9b6;
+    cursor: not-allowed;
+}
+
+.confirm-btn:disabled:hover {
+    background: #f3a9b6;
+}
+
+
+/* Hour slot picker - shown for "hour" lease-type spaces, after a single day is picked --------- */
+.hour-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.hour-slot {
+    padding: 8px 6px;
+    font-size: 12px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.hour-slot:hover {
+    border-color: #ff385c;
+}
+
+.hour-slot.selected {
+    background: #ff385c;
+    border-color: #ff385c;
+    color: #fff;
+}
+
+.hour-slot.occupied {
+    background: #eee;
+    color: #aaa;
+    border-color: #eee;
+    cursor: not-allowed;
+}
+
+.hour-slots-clear-btn {
+    margin-top: 10px;
+    background: #eee;
+    color: #333;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.hour-slots-clear-btn:hover {
+    background: #ddd;
+}
 
 /* Price message updated - executed after select the dates */
 #message {
     margin-top: 50px;
     font-size: 2.8vh; /* 3% of the viewport height */
     color: #333;
+}
+
+/* Booking confirmation modal ---------------------------------------------------------------- */
+.booking-success-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #00000080;
+    align-items: center;
+    justify-content: center;
+}
+
+.booking-success-modal.open {
+    display: flex;
+}
+
+.booking-success-modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 420px;
+    border-radius: 14px;
+    padding: 32px 28px 26px;
+    text-align: center;
+    box-shadow: 0 12px 32px #00000033;
+    font-family: Arial, sans-serif;
+    animation: booking-success-pop 0.2s ease-out;
+}
+
+@keyframes booking-success-pop {
+    from { transform: scale(0.94); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.booking-success-modal-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: #e3f6ea;
+    color: #1fa855;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.booking-success-modal-content h3 {
+    margin: 0 0 10px;
+    font-size: 19px;
+    color: #222;
+}
+
+.booking-success-modal-content p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0 0 24px;
+}
+
+.booking-success-modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.booking-success-modal-btn {
+    background: #ff385c;
+    color: #fff;
+    border: none;
+    padding: 11px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.booking-success-modal-btn:hover {
+    background: #d02d4e;
+}
+
+.booking-success-modal-btn-secondary {
+    background: #eee;
+    color: #333;
+}
+
+.booking-success-modal-btn-secondary:hover {
+    background: #ddd;
 }
 
 @media (max-width: 768px) {

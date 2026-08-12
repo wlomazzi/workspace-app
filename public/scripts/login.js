@@ -1,9 +1,11 @@
-// If the user already has a valid session token, skip the login page entirely.
+// If the user already has a valid session, skip the login page entirely. The session itself now
+// lives in an httpOnly cookie the page can't read directly, so this has to ask the server.
 // No blocking alert here - a silent redirect is the expected behavior for "already logged in".
-const existingToken = localStorage.getItem('access_token');
-if (existingToken) {
-    window.location.href = 'index.html';
-}
+checkSession().then(result => {
+    if (result.loggedIn) {
+        window.location.href = 'index.html';
+    }
+});
 
 // This script handles the login functionality for the user interface. It captures the form submission,
 // sends the login credentials to the server, and handles the response.
@@ -39,7 +41,7 @@ loginForm.addEventListener('submit', async (e) => {
     loginSubmitBtn.textContent = 'Logging in...';
 
     try {
-        const response = await fetch('/api/users/user_login', {
+        const response = await apiFetch('/api/users/user_login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,9 +52,9 @@ loginForm.addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (response.ok) {
-            // Save the access token and user ID, then redirect straight to the homepage.
-            // No blocking alert - the redirect itself is enough feedback.
-            localStorage.setItem('access_token', data.access_token);
+            // The actual session token is set as an httpOnly cookie by the server - it never
+            // touches this JS. What's kept here is just a non-sensitive display hint (used for
+            // instant "am I logged in" UI checks); the server never trusts it for authorization.
             localStorage.setItem('user_id', data.user.id);
             localStorage.setItem('user_email', data.user.email);
 

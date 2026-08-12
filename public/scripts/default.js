@@ -13,7 +13,7 @@ async function fetchAndDisplayWorkspaces() {
 
         displaySpaces(spaces);  // Call the function to display the spaces on the page
     } catch (error) {
-        console.error("Erro ao buscar dados dos workspaces:", error);
+        console.error("Error fetching workspace data:", error);
     }
 }
 
@@ -262,7 +262,7 @@ document.addEventListener("click", function(event) {
 
 // SEARCH BAR BUTTON - Executed when the user click on the Search button
 document.querySelector('button').addEventListener('click', async function () {
-    // Pegando os valores dos campos de filtro
+    // Getting the values from the filter fields
     const location = document.getElementById('location').value.trim();
     const checkIn  = document.getElementById('check-in').value;
     const checkOut = document.getElementById('check-out').value;
@@ -282,7 +282,7 @@ document.querySelector('button').addEventListener('click', async function () {
         team_size: teamSize
     };
 
-    // Enviando os filtros para o backend via POST
+    // Sending the filters to the backend via POST
     try {
         const response = await fetch("/api/spaces/workspaces/filter_spaces", {
             method: "POST",

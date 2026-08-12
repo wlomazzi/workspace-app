@@ -1,19 +1,17 @@
 
 import express from 'express';
-import { supabase } from '../../lib/supabase.js';  // Import the Supabase client
+import { supabase } from '../../lib/supabase.js';  // Import the Supabase client (anon key, public reads only)
 import multer from 'multer';  // Importing multer using ES Module
 import dotenv from 'dotenv';
+import { requireAuth, requireCsrf } from '../middleware/auth.js';
 
 // Load environment variables from .env file
 dotenv.config();
 
 // Configuration for storing files in memory
-const storage = multer.memoryStorage(); 
+const storage = multer.memoryStorage();
 const upload  = multer({ storage: storage });
 const router  = express.Router();
-
-// Middleware to parse JSON bodies
-router.use(express.json()); // added to parse JSON bodies - Middleware to parse URL-encoded bodies
 
 // Middleware to parse JSON bodies
 router.use(express.json()); // added to parse JSON bodies - Middleware to parse URL-encoded bodies
@@ -22,14 +20,14 @@ router.use(express.json()); // added to parse JSON bodies - Middleware to parse 
 
 
 // Get the workspace by the workspace_id - Return data from a specific workspace, only if the parameter id is not empty
-// If you do not pass any parameters, it returns all workspaces data. 
+// If you do not pass any parameters, it returns all workspaces data. Public route - workspaces are the site's catalog.
 router.get("/", async (req, res) => {
 
     const { id } = req.query; // Get the ID from the query string (e.g., ?id=123)
-    
+
     try {
         let query = supabase.from('workspaces').select('*');
-        
+
         if (id) {
             query = query.eq('id', id);  // Get the workspace with the specified ID
 
@@ -53,26 +51,26 @@ router.get("/", async (req, res) => {
 
 
 
-// Route to receive the POST request filter by the fields received from the front-end
+// Route to receive the POST request filter by the fields received from the front-end. Public route.
 router.post("/filter_spaces", async (req, res) => {
     // Destructure the filters from the request body
-    const { 
-        location, 
-        check_in, 
-        check_out, 
-        team_size, 
-        price_min, 
-        price_max, 
-        amn_kitchen, 
-        amn_parking, 
-        amn_public_transport, 
-        amn_wifi, 
-        amn_printer, 
-        amn_air, 
-        amn_smoking, 
-        location_type, 
+    const {
+        location,
+        check_in,
+        check_out,
+        team_size,
+        price_min,
+        price_max,
+        amn_kitchen,
+        amn_parking,
+        amn_public_transport,
+        amn_wifi,
+        amn_printer,
+        amn_air,
+        amn_smoking,
+        location_type,
         rating,
-        sort 
+        sort
     } = req.body; // Receiving the filter parameters
 
     //console.log(req.body); // Debug JSON Payload
@@ -81,26 +79,28 @@ router.post("/filter_spaces", async (req, res) => {
         // If the user searched by date range, find workspaces that already have a
         // conflicting reservation in that window, so they can be excluded below.
         // Two ranges overlap when: reservation.start_time <= check_out AND reservation.end_time >= check_in.
+        // Uses the get_all_reservation_slots() RPC (security definer) instead of selecting from
+        // "reservations" directly - that table's RLS now only allows a reservation's own renter
+        // or the workspace's owner to read it, so an anonymous browsing visitor couldn't otherwise
+        // see anything here. The RPC intentionally only exposes dates/hours, never renter identity.
         let workspaceIdsToExclude = [];
         if (check_in && check_out) {
-            const { data: conflictingReservations, error: reservationsError } = await supabase
-                .from('reservations')
-                .select('workspace_id')
-                .lte('start_time', check_out)
-                .gte('end_time', check_in);
+            const { data: allSlots, error: reservationsError } = await supabase
+                .rpc('get_all_reservation_slots');
 
             if (reservationsError) {
                 return res.status(500).json({ error: 'Error checking existing reservations.' });
             }
 
-            workspaceIdsToExclude = [...new Set((conflictingReservations || []).map(r => r.workspace_id))];
+            const conflicting = (allSlots || []).filter(r => r.start_time <= check_out && r.end_time >= check_in);
+            workspaceIdsToExclude = [...new Set(conflicting.map(r => r.workspace_id))];
         }
 
-        // Construindo a consulta do Supabase com base nos parâmetros
+        // Building the Supabase query based on the received parameters
         let query = supabase
             .from('workspaces')
             .select('*')
-            .eq('active', true); // Apenas workspaces ativos
+            .eq('active', true); // Active workspaces only
 
         // Filtrando por Neighborhood
         if (location) {
@@ -131,7 +131,7 @@ router.post("/filter_spaces", async (req, res) => {
                 .gte('price', price_min) // Filters by minimum price
                 .lte('price', price_max); // Filters by maximum price
         }
-        
+
         // Filtering by amenities (checkboxes for various amenities) ------------------------------------------------------------------
         if (amn_kitchen === true) {
             query = query.eq('amn_kitchen', amn_kitchen); // Filters if Kitchen is available
@@ -160,18 +160,18 @@ router.post("/filter_spaces", async (req, res) => {
         if (amn_smoking === true) {
             query = query.eq('amn_smoking', amn_smoking); // Filters if Smoking is allowed
         }
-        
+
         // Filtering by lease time (location type, e.g., day, week, month)
         if (location_type && location_type!=='all') {
             query = query.eq('type', location_type); // Filters by lease time (e.g., day, week, month)
         }
-        
+
         // Filtering by rating (star rating)
         if (rating) {
             query = query.gte('rating', rating); // Filters workspaces with rating greater than or equal to the provided rating
         }
 
-        
+
         // console.log('query....:',query); // Debug QUERY
 
         // Apply sorting based on user's selection
@@ -212,25 +212,14 @@ router.post("/filter_spaces", async (req, res) => {
 
 
 
-
-
-// Route to receive the POST request and process the user_id
-// This route filter all workspaces managed by the user OWNER
-router.post("/owner_spaces", async (req, res) => {
-    //console.log(req.body); //Logging the request body for debugging
-    const { user_id } = req.body; // Accessing user_id from the request body
-
-    if (!user_id) {
-        return res.status(400).json({ error: 'user_id is required' });
-    }
-
+// Route to list every workspace managed by the logged-in owner. Identity comes from the verified
+// session cookie (requireAuth), never from anything the client claims in the request body.
+router.post("/owner_spaces", requireAuth, async (req, res) => {
     try {
-        // Supabase Query
-        const { data, error } = await supabase
+        const { data, error } = await req.supabaseAuthed
             .from('workspaces')
             .select('*')
-            .eq('user_id', user_id);
-            //.single(); // Ensure that only one result is returned. However, if there is more than one result, an error is returned.
+            .eq('user_id', req.userId);
 
         if (error) {
             return res.status(500).json({ error: 'Error to find data from this user.' });
@@ -241,36 +230,32 @@ router.post("/owner_spaces", async (req, res) => {
         console.error('Error getting the data:', error.message);
         res.status(500).json({ error: error.message });
     }
-        
+
 });
 
 
 
-// Route to get all workspaces rented by the user and workspace details 
-router.post("/coworker_spaces", async (req, res) => {  // Changed to POST
-    const { user_id } = req.body; // Accessing user_id from the request body
-
-    if (!user_id) {
-        return res.status(400).json({ error: 'user_id is required' });
-    }
-
+// Route to get all workspaces rented by the logged-in user, with workspace details.
+router.post("/coworker_spaces", requireAuth, async (req, res) => {
     try {
-        // First query: Fetch data from reservations table
-        const { data: reservations, error: reservationsError } = await supabase
+        // First query: fetch this user's own reservations. Uses the JWT-scoped client because
+        // reservations RLS now only allows reading rows where auth.uid() = user_id (or the
+        // workspace is owned by the caller) - the anon client would see nothing here.
+        const { data: reservations, error: reservationsError } = await req.supabaseAuthed
             .from('reservations')
             .select('*')
-            .eq('user_id', user_id);
+            .eq('user_id', req.userId);
 
         if (reservationsError) {
             return res.status(500).json({ error: 'Error fetching reservations for this user.' });
         }
 
-        // Second query: Fetch data from workspaces table (using the workspace_id from reservations)
+        // Second query: fetch workspace details for those reservations (workspaces are public to read).
         const workspaceIds = reservations.map(reservation => reservation.workspace_id);
         const { data: workspaces, error: workspacesError } = await supabase
             .from('workspaces')
             .select('*')
-            .in('id', workspaceIds); // Get only active Workspaces  // Filter workspaces based on workspace_ids from reservations
+            .in('id', workspaceIds);
 
         if (workspacesError) {
             return res.status(500).json({ error: 'Error fetching workspaces.' });
@@ -293,14 +278,21 @@ router.post("/coworker_spaces", async (req, res) => {  // Changed to POST
 
 
 
-// Route to insert workspaces for the owner
-router.post("/insert", async (req, res) => {
-    const { user_id, title, details, price, address, neighborhood, seats, type, lease_time, latitude, longitude, available_from,
+// Route to insert workspaces for the owner. user_id always comes from the verified session -
+// the request body can no longer claim to be inserting on behalf of someone else.
+router.post("/insert", requireAuth, requireCsrf, async (req, res) => {
+    const { title, details, price, address, neighborhood, seats, type, lease_time, open_hour, close_hour, latitude, longitude, available_from,
         amn_kitchen, amn_parking, amn_public_transport, amn_wifi, amn_printer, amn_air, amn_smoking, active} = req.body;
+    const user_id = req.userId;
 
     // Check if all required fields are provided
-    if (!user_id || !title || !details || !price || !address || !neighborhood || !seats || !type || !lease_time || !latitude || !longitude) {
+    if (!title || !details || !price || !address || !neighborhood || !seats || !type || !lease_time || !latitude || !longitude) {
         return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    // open_hour/close_hour only make sense for hourly-rate spaces
+    if (lease_time === 'hour' && (open_hour === null || open_hour === undefined || close_hour === null || close_hour === undefined || open_hour >= close_hour)) {
+        return res.status(400).json({ error: 'A valid opening/closing hour window is required for hourly spaces' });
     }
 
     try {
@@ -316,6 +308,8 @@ router.post("/insert", async (req, res) => {
             seats,
             type,
             lease_time,
+            open_hour: lease_time === 'hour' ? open_hour : null,
+            close_hour: lease_time === 'hour' ? close_hour : null,
             latitude,
             longitude,
             available_from,
@@ -329,8 +323,10 @@ router.post("/insert", async (req, res) => {
             active
         };
 
-        // Insert the workspace record in Supabase (.select() so we get the new row, including its id, back)
-        const { data, error } = await supabase
+        // Insert the workspace record in Supabase, using the caller's own JWT-scoped client so
+        // RLS's "auth.uid() = user_id" check on the insert actually matches. (.select() so we
+        // get the new row, including its id, back)
+        const { data, error } = await req.supabaseAuthed
             .from('workspaces')
             .insert(insertWorkspaceData)
             .select()
@@ -351,24 +347,31 @@ router.post("/insert", async (req, res) => {
 });
 
 
-// Route to update the workspace by workspace_id
-router.post("/update", async (req, res) => {
-    const { user_id, space_id, title, details, price, address, neighborhood, seats, type, lease_time, latitude, longitude, available_from,
+// Route to update the workspace by workspace_id. Ownership is enforced both here (an explicit
+// check, for a clean 404 instead of an opaque RLS failure) and again at the database level by RLS.
+router.post("/update", requireAuth, requireCsrf, async (req, res) => {
+    const { space_id, title, details, price, address, neighborhood, seats, type, lease_time, open_hour, close_hour, latitude, longitude, available_from,
         amn_kitchen, amn_parking, amn_public_transport, amn_wifi, amn_printer, amn_air, amn_smoking, active} = req.body;
+    const user_id = req.userId;
 
     // Check if all required fields are provided
-    if (!user_id || !space_id || !title || !details || !price || !address || !neighborhood || !seats || !type || !lease_time || !latitude || !longitude) {
+    if (!space_id || !title || !details || !price || !address || !neighborhood || !seats || !type || !lease_time || !latitude || !longitude) {
         return res.status(400).json({ error: 'All fields are required' });
     }
 
+    // open_hour/close_hour only make sense for hourly-rate spaces
+    if (lease_time === 'hour' && (open_hour === null || open_hour === undefined || close_hour === null || close_hour === undefined || open_hour >= close_hour)) {
+        return res.status(400).json({ error: 'A valid opening/closing hour window is required for hourly spaces' });
+    }
+
     try {
-        // Check if the workspace exists
-        const { data: workspace, error: workspaceError } = await supabase
+        // Check if the workspace exists and belongs to the user
+        const { data: workspace, error: workspaceError } = await req.supabaseAuthed
             .from('workspaces')
             .select('*')
             .eq('id', space_id)
-            .eq('user_id', user_id)  // Ensure the workspace belongs to the user
-            .single();  // Ensure only one result is returned
+            .eq('user_id', user_id)
+            .single();
 
         if (workspaceError || !workspace) {
             return res.status(404).json({ error: 'Workspace not found or does not belong to the user' });
@@ -384,6 +387,8 @@ router.post("/update", async (req, res) => {
             seats,
             type,
             lease_time,
+            open_hour: lease_time === 'hour' ? open_hour : null,
+            close_hour: lease_time === 'hour' ? close_hour : null,
             latitude,
             longitude,
             available_from,
@@ -398,7 +403,7 @@ router.post("/update", async (req, res) => {
         };
 
         // Update the workspace record in Supabase
-        const { data, error } = await supabase
+        const { data, error } = await req.supabaseAuthed
             .from('workspaces')
             .update(updatedWorkspaceData)
             .eq('id', space_id);
@@ -420,16 +425,17 @@ router.post("/update", async (req, res) => {
 
 
 // Route to delete a workspace owned by the user
-router.post("/delete", async (req, res) => {
-    const { user_id, space_id } = req.body;
+router.post("/delete", requireAuth, requireCsrf, async (req, res) => {
+    const { space_id } = req.body;
+    const user_id = req.userId;
 
-    if (!user_id || !space_id) {
-        return res.status(400).json({ error: 'user_id and space_id are required' });
+    if (!space_id) {
+        return res.status(400).json({ error: 'space_id is required' });
     }
 
     try {
         // Check if the workspace exists and belongs to the user
-        const { data: workspace, error: workspaceError } = await supabase
+        const { data: workspace, error: workspaceError } = await req.supabaseAuthed
             .from('workspaces')
             .select('*')
             .eq('id', space_id)
@@ -441,7 +447,7 @@ router.post("/delete", async (req, res) => {
         }
 
         // Delete the workspace record (associated reservations are removed automatically via ON DELETE CASCADE)
-        const { error } = await supabase
+        const { error } = await req.supabaseAuthed
             .from('workspaces')
             .delete()
             .eq('id', space_id);
@@ -461,8 +467,9 @@ router.post("/delete", async (req, res) => {
 
 
 
-// Route to upload images
-router.post("/upload_image", upload.single("file"), async (req, res) => {
+// Route to upload images. Ownership of space_id is verified before touching storage or the DB -
+// previously ANY logged-in user could overwrite images on ANY workspace by just guessing its id.
+router.post("/upload_image", requireAuth, requireCsrf, upload.single("file"), async (req, res) => {
 
     try {
         const file = req.file;  // The uploaded file
@@ -477,11 +484,23 @@ router.post("/upload_image", upload.single("file"), async (req, res) => {
             return res.status(400).json({ success: false, message: "Space ID and Image Code are required." });
         }
 
+        // Make sure this workspace actually belongs to the logged-in user before accepting an upload for it.
+        const { data: workspace, error: workspaceError } = await req.supabaseAuthed
+            .from('workspaces')
+            .select('id')
+            .eq('id', space_id)
+            .eq('user_id', req.userId)
+            .single();
+
+        if (workspaceError || !workspace) {
+            return res.status(404).json({ success: false, message: 'Workspace not found or does not belong to you.' });
+        }
+
         // Generate the image file name
         const imageName = `${space_id}_${image_code}.jpg`;
 
         // Upload the image to Supabase Storage
-        const { data, error } = await supabase
+        const { data, error } = await req.supabaseAuthed
             .storage
             .from('workspaces')  // Supabase bucket name
             .upload(`spaces/${imageName}`, file.buffer, {
@@ -505,13 +524,13 @@ router.post("/upload_image", upload.single("file"), async (req, res) => {
         updatedImageField[image_code] = publicUrl;  // Update the corresponding field, e.g. image_01
 
         // Update the 'workspaces' table with the image URL
-        const { data: workspaceData, error: workspaceError } = await supabase
+        const { data: workspaceData, error: workspaceUpdateError } = await req.supabaseAuthed
             .from('workspaces')
             .update(updatedImageField)
-            .eq('id', space_id);  // Make sure the workspace is owned by the user
+            .eq('id', space_id);
 
-        if (workspaceError) {
-            console.error('Error updating workspace:', workspaceError);
+        if (workspaceUpdateError) {
+            console.error('Error updating workspace:', workspaceUpdateError);
             return res.status(500).json({ success: false, message: 'Failed to update workspace image' });
         }
 
@@ -529,24 +548,23 @@ router.post("/upload_image", upload.single("file"), async (req, res) => {
 
 
 
-// Route to get occupied dates for a specific space
-// This function return all reservations for the workspace
+// Route to get occupied dates/hours for a specific space (or all spaces, if no id given), used to
+// grey out already-booked slots on the public booking calendar. Public route - visitors don't need
+// to be logged in to see when a space is free. Uses the get_all_reservation_slots() RPC instead of
+// reading "reservations" directly, since that table's RLS no longer allows anonymous reads (it
+// would otherwise expose who booked what to any visitor).
 router.get("/reservations", async (req, res) => {
     const { id } = req.query; // Get the ID from the query string (e.g., ?id=123)
     try {
-        let query = supabase.from('reservations').select('*');
-        
-        if (id) {
-            query = query.eq('workspace_id', id);  // Get the workspace with the specified ID
-        }
-
-        const { data, error } = await query;
+        const { data, error } = await supabase.rpc('get_all_reservation_slots');
 
         if (error) {
             return res.status(500).json({ error: error.message });
         }
 
-        res.json(data);  // Return the data as JSON
+        const filtered = id ? (data || []).filter(r => String(r.workspace_id) === String(id)) : data;
+
+        res.json(filtered);  // Return the data as JSON
     } catch (error) {
         console.error('Error getting the data:', error.message);
         res.status(500).json({ error: error.message });
@@ -557,44 +575,149 @@ router.get("/reservations", async (req, res) => {
 
 
 
+// Route for an owner to see the management report for one of their own workspaces:
+// the workspace itself + every reservation made on it, with the renter's basic
+// profile info (name, phone) attached to each reservation.
+router.post("/owner_reservations", requireAuth, async (req, res) => {
+    const { workspace_id } = req.body;
+    const user_id = req.userId;
 
-// Route to insert reservations for the workspace and the coworker
-router.post("/reservations_insert", async (req, res) => {
-    const { 
-        user_id, 
-        workspace_id, 
-        start_time, 
-        end_time, 
-        lease_time, 
-        rent_price, 
+    if (!workspace_id) {
+        return res.status(400).json({ error: 'workspace_id is required' });
+    }
+
+    try {
+        // Make sure this workspace actually belongs to the requesting user before
+        // returning any reservation/renter data for it.
+        const { data: workspace, error: workspaceError } = await req.supabaseAuthed
+            .from('workspaces')
+            .select('*')
+            .eq('id', workspace_id)
+            .eq('user_id', user_id)
+            .single();
+
+        if (workspaceError || !workspace) {
+            return res.status(404).json({ error: 'Workspace not found or does not belong to the user' });
+        }
+
+        // All reservations ever made on this workspace, most recent first. Uses the JWT-scoped
+        // client - reservations RLS allows this because the caller owns the workspace.
+        const { data: reservations, error: reservationsError } = await req.supabaseAuthed
+            .from('reservations')
+            .select('*')
+            .eq('workspace_id', workspace_id)
+            .order('start_time', { ascending: false });
+
+        if (reservationsError) {
+            return res.status(500).json({ error: 'Error fetching reservations for this workspace.' });
+        }
+
+        // Attach the renter's profile (name/phone) to each reservation.
+        const renterIds = [...new Set((reservations || []).map(r => r.user_id))];
+        let renters = [];
+
+        if (renterIds.length > 0) {
+            const { data: renterProfiles, error: renterError } = await req.supabaseAuthed
+                .from('profiles')
+                .select('id, full_name, phone, avatar_url')
+                .in('id', renterIds);
+
+            if (renterError) {
+                return res.status(500).json({ error: 'Error fetching renter profiles.' });
+            }
+
+            renters = renterProfiles || [];
+        }
+
+        const reservationsWithRenter = (reservations || []).map(reservation => ({
+            ...reservation,
+            renter: renters.find(renter => renter.id === reservation.user_id) || null
+        }));
+
+        res.json({ workspace, reservations: reservationsWithRenter });
+
+    } catch (error) {
+        console.error('Error getting owner reservations:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
+// Route to insert reservations for the workspace and the coworker. user_id always comes from the
+// verified session, never the request body.
+router.post("/reservations_insert", requireAuth, requireCsrf, async (req, res) => {
+    const {
+        workspace_id,
+        start_time,
+        end_time,
+        lease_time,
+        start_hour,
+        end_hour,
+        rent_price,
         rent_total,
         status,
         payment_status
     } = req.body;
+    const user_id = req.userId;
 
-    console.log(req);
     // Check if all required fields are provided
-    if (!user_id || !workspace_id || !start_time || !end_time || !lease_time || !rent_price || !rent_total) {
+    if (!workspace_id || !start_time || !end_time || !lease_time || !rent_price || !rent_total) {
         return res.status(400).json({ error: 'All fields are required' });
     }
 
-    try {
+    if (lease_time === 'hour' && (start_hour === undefined || start_hour === null || end_hour === undefined || end_hour === null || start_hour >= end_hour)) {
+        return res.status(400).json({ error: 'A valid start/end hour is required for hourly reservations' });
+    }
 
-        // Prepare data to update the workspace
+    try {
+        // Make sure this reservation doesn't overlap an existing one for the same workspace,
+        // regardless of the client's own occupied-dates/occupied-hours UI (belt and suspenders
+        // against race conditions or someone hitting this endpoint directly). Uses the public
+        // availability RPC since it needs to see every reservation on the workspace, not just
+        // this user's own (which is all "reservations" RLS would otherwise allow them to read).
+        const { data: allSlots, error: existingError } = await supabase.rpc('get_all_reservation_slots');
+
+        if (existingError) {
+            console.error('Error checking existing reservations:', existingError);
+            return res.status(500).json({ error: 'Failed to validate reservation availability' });
+        }
+
+        const existingReservations = (allSlots || []).filter(r => String(r.workspace_id) === String(workspace_id));
+
+        const hasConflict = existingReservations.some(existing => {
+            if (lease_time === 'hour') {
+                // Same-day overlap check on the hour range [start_hour, end_hour).
+                return existing.start_time === start_time &&
+                    start_hour < existing.end_hour &&
+                    end_hour > existing.start_hour;
+            }
+            // Day-based overlap: two date ranges overlap when one starts before the other ends.
+            return existing.start_time <= end_time && existing.end_time >= start_time;
+        });
+
+        if (hasConflict) {
+            return res.status(409).json({ error: 'This workspace is already booked for the selected date/time.' });
+        }
+
+        // Prepare data to insert the reservation
         const insertreservation = {
             user_id,
             workspace_id,
             start_time,
             end_time,
             lease_time,
+            start_hour: lease_time === 'hour' ? start_hour : null,
+            end_hour: lease_time === 'hour' ? end_hour : null,
             rent_price,
             rent_total,
             status,
             payment_status
         };
 
-        // Update the workspace record in Supabase
-        const { data, error } = await supabase
+        // Insert the reservation record in Supabase, using the caller's own JWT-scoped client so
+        // RLS's "auth.uid() = user_id" check on the insert actually matches.
+        const { data, error } = await req.supabaseAuthed
             .from('reservations')
             .insert(insertreservation);
 

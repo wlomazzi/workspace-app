@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Reservations</title>
+    <link rel="stylesheet" href="/components/navbar.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <link rel="stylesheet" href="/css/styles_space_reservations.css">
+    <script defer src="/scripts/auth-fetch.js"></script>
+    <script defer src="/components/navbar.js"></script>
+    <script defer src="/components/footer.js"></script>
+</head>
+<body>
+    <header></header>
+
+    <main class="report-container">
+
+        <a href="/user_profile.html" class="back-link">&larr; Back to my spaces</a>
+
+        <!-- Workspace summary header -->
+        <section class="workspace-header">
+            <img id="ws-image" src="" alt="">
+            <div class="workspace-header-info">
+                <h2 id="ws-title">Loading...</h2>
+                <p id="ws-location"></p>
+                <p id="ws-price"></p>
+            </div>
+        </section>
+
+        <!-- KPI / summary cards -->
+        <section class="summary-cards" id="summary-cards">
+            <div class="summary-card">
+                <span class="summary-label">Total revenue</span>
+                <span class="summary-value" id="kpi-revenue">C$ 0</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Total reservations</span>
+                <span class="summary-value" id="kpi-count">0</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Upcoming</span>
+                <span class="summary-value" id="kpi-upcoming">0</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Booked days</span>
+                <span class="summary-value" id="kpi-days">0</span>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="filters-bar">
+            <div class="filter-field">
+                <label for="filter-from">From</label>
+                <input type="date" id="filter-from">
+            </div>
+            <div class="filter-field">
+                <label for="filter-to">To</label>
+                <input type="date" id="filter-to">
+            </div>
+            <div class="filter-field">
+                <label for="filter-status">Status</label>
+                <select id="filter-status">
+                    <option value="all">All</option>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="ongoing">Ongoing</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+            <button type="button" id="filter-clear" class="filter-clear-btn">Clear filters</button>
+        </section>
+
+        <!-- Reservations table -->
+        <section class="reservations-table-section">
+            <table class="reservations-table">
+                <thead>
+                    <tr>
+                        <th>Renter</th>
+                        <th>Phone</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Hours</th>
+                        <th>Lease</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="reservations-tbody"></tbody>
+            </table>
+            <p id="reservations-empty" class="reservations-empty" style="display:none;">No reservations match these filters.</p>
+        </section>
+
+    </main>
+
+    <script defer src="/scripts/space_reservations.js"></script>
+
+    <footer></footer>
+</body>
+</html>

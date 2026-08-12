@@ -56,6 +56,39 @@
     margin: 0 0 10px;
     line-height: 1.4;
 }
+
+.form-success {
+    background: #e3f6ea;
+    color: #1a7c3f;
+    border: 1px solid #bfe8cd;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin: 0 0 10px;
+    line-height: 1.4;
+}
+
+.form-links {
+    text-align: center;
+    font-size: 13px;
+    margin: 12px 0 0;
+}
+
+.form-links a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.form-links a:hover {
+    text-decoration: underline;
+}
+
+.form-hint {
+    font-size: 12px;
+    color: #777;
+    margin: -4px 0 10px;
+    line-height: 1.4;
+}
 /* END Configuration for login form ----------------------------------------------------------------------- */
 
 
@@ -101,4 +134,67 @@
     background: #0056b3;
 }
 /* END Configuration for the Register Form ---------------------------------------------------------------- */
+
+
+/* Configuration for the Forgot Password / Reset Password forms - same card look as login/register -------- */
+#forgotPasswordForm,
+#resetPasswordForm {
+    display: flex;
+    flex-direction: column;
+    max-width: 300px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+#forgotPasswordForm h2,
+#resetPasswordForm h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+#forgotPasswordForm label,
+#resetPasswordForm label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#forgotPasswordForm input,
+#resetPasswordForm input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+#forgotPasswordForm input:disabled,
+#resetPasswordForm input:disabled {
+    background: #f4f4f4;
+    color: #999;
+    cursor: not-allowed;
+}
+
+#forgotPasswordForm button,
+#resetPasswordForm button {
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#forgotPasswordForm button:hover,
+#resetPasswordForm button:hover {
+    background: #0056b3;
+}
+
+#forgotPasswordForm button:disabled,
+#resetPasswordForm button:disabled {
+    background: #6ea8e0;
+    cursor: not-allowed;
+}
+/* END Configuration for the Forgot Password / Reset Password forms ---------------------------------------- */
 

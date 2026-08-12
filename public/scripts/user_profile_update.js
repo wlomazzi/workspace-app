@@ -99,16 +99,9 @@ updateProfileBtn.addEventListener("click", async function () {
         return;
     }
 
-    // Validate if the user is logged in (check JWT or localStorage)
-    const access_token = localStorage.getItem('access_token');
-    if (!access_token) {
-        showMessage("Your session has expired. Please log in again.");
-        return;
-    }
-
-    // Prepare the data to send
+    // Prepare the data to send. user_id is no longer sent - the server derives it from the
+    // session cookie (requireAuth), so there's nothing here for a tampered request to spoof.
     const profileData = {
-        user_id: user_id,
         full_name: fullName,
         location: location,
         phone: phone,
@@ -121,14 +114,20 @@ updateProfileBtn.addEventListener("click", async function () {
 
     try {
         // Send the updated data to the backend
-        const response = await fetch('/api/users/user_login/profile_update', {
+        const response = await apiFetch('/api/users/user_login/profile_update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${access_token}`,
             },
             body: JSON.stringify(profileData)
         });
+
+        if (response.status === 401) {
+            showMessage("Your session has expired. Please log in again.");
+            updateProfileBtn.disabled = false;
+            updateProfileBtn.textContent = "Update Profile";
+            return;
+        }
 
         const result = await response.json();
 
@@ -219,11 +218,10 @@ if (updatePasswordBtn) {
         updatePasswordBtn.textContent = "Updating...";
 
         try {
-            const response = await fetch('/api/users/user_login/change_password', {
+            const response = await apiFetch('/api/users/user_login/change_password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email,
                     current_password: currentPassword,
                     new_password: newPassword
                 })
@@ -274,14 +272,7 @@ document.getElementById("fileInput").addEventListener("change", async function (
         return;
     }
 
-    const access_token = localStorage.getItem('access_token');
-    if (!access_token) {
-        showMessage("Your session has expired. Please log in again.");
-        return;
-    }
-
     const formData = new FormData();
-    formData.append("user_id", user);
     formData.append("file", file);
 
     const profilePicElement = document.getElementById("profile-pic");
@@ -289,13 +280,16 @@ document.getElementById("fileInput").addEventListener("change", async function (
     profilePicElement.style.opacity = "0.5"; // subtle loading feedback on the avatar itself
 
     try {
-        const response = await fetch("/api/users/user_login/profile_picture", {
+        const response = await apiFetch("/api/users/user_login/profile_picture", {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${access_token}`,
-            },
             body: formData
         });
+
+        if (response.status === 401) {
+            profilePicElement.src = previousSrc;
+            showMessage("Your session has expired. Please log in again.");
+            return;
+        }
 
         const result = await response.json();
 

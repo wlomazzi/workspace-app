@@ -42,7 +42,7 @@ registerForm.addEventListener('submit', async (e) => {
     registerSubmitBtn.textContent = 'Creating account...';
 
     try {
-        const response = await fetch('/api/users/user_login/register', {
+        const response = await apiFetch('/api/users/user_login/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const userId = localStorage.getItem('user_id'); // Gets the user ID from localStorage
         const userEmail = localStorage.getItem('user_email'); // Get user email from localStorage
-        const userPhone = localStorage.getItem('user_phone'); // Obtém o telefone do usuário
+        const userPhone = localStorage.getItem('user_phone'); // Get the user's phone from localStorage
         const userLocation = localStorage.getItem('user_location'); // Get user's phone from localStorage
         const userFullName = localStorage.getItem('user_fullname'); // Gets the full name
         const userProfilePic = localStorage.getItem('user_picture'); // Get user profile picture from localStorage
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const userIsCoworker = localStorage.getItem('user_coworker'); // Checks if the user is a coworker
         
         try {
-            const response = await fetch('/api/spaces/workspaces/owner_spaces', {
+            const response = await apiFetch('/api/spaces/workspaces/owner_spaces', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             };
 
             // Fetch rented spaces for the user
-            const respRentedSpaces = await fetch('/api/spaces/workspaces/coworker_spaces', {
+            const respRentedSpaces = await apiFetch('/api/spaces/workspaces/coworker_spaces', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -143,6 +143,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     <h4>${space.title}</h4>
                     <p>${space.location}</p>
                     <p><strong>${space.price}</strong></p>
+                    <button type="button" class="space-reservations-btn">View reservations</button>
                 </div>
             `;
 
@@ -150,6 +151,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             wrapper.querySelector(".space-delete-btn").addEventListener("click", function (event) {
                 event.stopPropagation();
                 openDeleteModal(space.id, space.title);
+            });
+            wrapper.querySelector(".space-reservations-btn").addEventListener("click", function (event) {
+                event.stopPropagation();
+                window.location.href = `space_reservations.html?space_id=${space.id}`;
             });
             wrapper.querySelector(".space-card").addEventListener("click", function () {
                 window.location.href = `space_manage.html?space_id=${space.id}`;
@@ -219,17 +224,16 @@ document.addEventListener("DOMContentLoaded", function () {
     confirmBtn.addEventListener("click", async function () {
         if (!pendingDeleteSpaceId) return;
 
-        const userId = localStorage.getItem('user_id');
         const spaceId = pendingDeleteSpaceId;
 
         confirmBtn.disabled = true;
         confirmBtn.textContent = "Deleting...";
 
         try {
-            const response = await fetch('/api/spaces/workspaces/delete', {
+            const response = await apiFetch('/api/spaces/workspaces/delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, space_id: spaceId })
+                body: JSON.stringify({ space_id: spaceId })
             });
 
             const result = await response.json();

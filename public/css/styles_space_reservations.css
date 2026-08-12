@@ -1,0 +1,200 @@
+/* Reset */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+.report-container {
+    width: 80%;
+    max-width: 80%;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Workspace header -------------------------------------------------------- */
+.workspace-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 20px;
+}
+
+.workspace-header img {
+    width: 120px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #f2f2f2;
+}
+
+.workspace-header-info h2 {
+    margin: 0 0 4px;
+    color: #222;
+}
+
+.workspace-header-info p {
+    margin: 2px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Summary KPI cards -------------------------------------------------------- */
+.summary-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.summary-card {
+    flex: 1 1 160px;
+    background: #f8f9fb;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.summary-label {
+    font-size: 13px;
+    color: #888;
+}
+
+.summary-value {
+    font-size: 22px;
+    font-weight: bold;
+    color: #222;
+}
+
+/* Filters bar --------------------------------------------------------------- */
+.filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px;
+    margin-top: 24px;
+    padding: 16px;
+    background: #f8f9fb;
+    border-radius: 10px;
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.filter-field label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #666;
+}
+
+.filter-field input,
+.filter-field select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.filter-clear-btn {
+    background: #eee;
+    color: #333;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    height: fit-content;
+}
+
+.filter-clear-btn:hover {
+    background: #ddd;
+}
+
+/* Reservations table --------------------------------------------------------- */
+.reservations-table-section {
+    margin-top: 24px;
+    overflow-x: auto;
+}
+
+.reservations-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.reservations-table th,
+.reservations-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.reservations-table th {
+    background: #f8f9fb;
+    color: #555;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.reservations-table tbody tr:hover {
+    background: #fafafa;
+}
+
+.reservations-empty {
+    text-align: center;
+    color: #888;
+    padding: 30px 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-upcoming {
+    background: #e6f0ff;
+    color: #0056b3;
+}
+
+.status-ongoing {
+    background: #e3f6ea;
+    color: #1fa855;
+}
+
+.status-completed {
+    background: #eee;
+    color: #666;
+}

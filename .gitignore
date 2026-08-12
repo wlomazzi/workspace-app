@@ -7,7 +7,7 @@
 # Logs
 *.log
 
-# Diretórios de dependências e arquivos de lock
+# Dependency directories and lock files
 package-lock.json
 yarn.lock
 
@@ -15,24 +15,30 @@ yarn.lock
 .vscode/
 .idea/
 
-# Sistema de arquivos do OS
+# OS filesystem files
 .DS_Store
 Thumbs.db
 
-# Arquivos temporários
+# Temporary files
 *.swp
 *.swo
 *.tmp
 *.bak
 
-# Pastas de builds
+# Build folders
 /dist
 /build
 
-# Arquivos de ambiente
+# Environment files
 .env
 .env.local
 .env.development
 .env.test
 .env.production
 .vercel
+
+# Database schema / migration scripts - kept out of the (public) repo on purpose.
+# Keep a personal backup of these somewhere private (not just this machine) - see SETUP_SUPABASE.md.
+schema.sql
+migration_hour_booking.sql
+migration_security_hardening.sql

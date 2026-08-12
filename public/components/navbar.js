@@ -9,8 +9,21 @@ document.addEventListener("DOMContentLoaded", function () {
             // Insert the navbar HTML at the top of the body
             document.body.insertBefore(navbarContainer, document.body.firstChild);
 
-            const userId    = localStorage.getItem('user_id');  // Get the user ID from localStorage
-            const userEmail = localStorage.getItem('user_email');  // Get the user's email from localStorage
+            // The session itself lives in an httpOnly cookie now - this page's JS can't read it
+            // directly, so ask the server whether the visitor is actually logged in. (localStorage
+            // still keeps a non-sensitive user_id/email hint for other pages' instant UI checks,
+            // but the navbar always defers to this real check since it runs on every single page.)
+            const sessionResult = await checkSession();
+            const userId = sessionResult.loggedIn ? sessionResult.user.id : null;
+            const userEmail = sessionResult.loggedIn ? sessionResult.user.email : null;
+
+            if (userId) {
+                localStorage.setItem('user_id', userId);
+                localStorage.setItem('user_email', userEmail);
+            } else {
+                localStorage.removeItem('user_id');
+                localStorage.removeItem('user_email');
+            }
 
             // Show only the menu options that make sense for the current auth state:
             // logged in -> Profile / Logout, logged out -> Log in / Sign up.
@@ -25,20 +38,16 @@ document.addEventListener("DOMContentLoaded", function () {
             if (menuLogout) menuLogout.style.display = userId ? 'block' : 'none';
 
             if (userId) {
-                //alert("User is logged in, ID: " + userId);
                 try {
-                    const response = await fetch('/api/users/user_login/session', {
+                    const response = await apiFetch('/api/users/user_login/session', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            user_id: userId,  // Pass the user_id in the request body
-                        }),
                     });
-            
+
                     const data = await response.json();
-            
+
                     //console.log(data); // Here you we see the user data returned by the server
 
                     localStorage.setItem('user_picture' , data.profile.avatar_url);
@@ -131,7 +140,7 @@ document.addEventListener("click", function(event) {
 // on their own browser just because the logout API had an issue.
 async function logout() {
     try {
-        const response = await fetch('/api/users/user_login/logout', {
+        const response = await apiFetch('/api/users/user_login/logout', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -145,9 +154,9 @@ async function logout() {
     } catch (error) {
         console.error('Error during logout:', error);
     } finally {
-        // Remove all user-related data from localStorage
+        // Remove all user-related data from localStorage (the actual session cookie is cleared
+        // server-side by the call above - this just clears the display hints kept client-side)
         localStorage.removeItem('logged_user');
-        localStorage.removeItem('access_token');
         localStorage.removeItem('user_email');
         localStorage.removeItem('user_id');
         localStorage.removeItem('user_picture');
@@ -176,7 +185,7 @@ async function checkPendingReviews(userId) {
     if (sessionStorage.getItem('reviews_prompt_shown') === 'true') return;
 
     try {
-        const response = await fetch(`/api/reviews/pending?user_id=${encodeURIComponent(userId)}`);
+        const response = await apiFetch('/api/reviews/pending');
         if (!response.ok) return;
 
         const pendingReviews = await response.json();
@@ -402,7 +411,6 @@ function buildReviewCard(item) {
     submitBtn.addEventListener('click', async function () {
         const messageEl = card.querySelector('.review-card-message');
         const comment = card.querySelector('.review-comment').value.trim();
-        const userId = localStorage.getItem('user_id');
 
         messageEl.textContent = '';
         messageEl.className = 'review-card-message';
@@ -410,11 +418,10 @@ function buildReviewCard(item) {
         submitBtn.textContent = 'Submitting...';
 
         try {
-            const response = await fetch('/api/reviews/submit', {
+            const response = await apiFetch('/api/reviews/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    user_id: userId,
                     reservation_id: item.reservation_id,
                     rating: selectedRating,
                     comment: comment || null,

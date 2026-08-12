@@ -1,9 +1,36 @@
 //const user = JSON.parse(sessionStorage.getItem("loggedUser"));
-const user = localStorage.getItem('user_id');  // Get the user ID from localStorage 
+const user = localStorage.getItem('user_id');  // Get the user ID from localStorage
 let calendarLeaseType = '';
 let calendarPrice = 0;
 let totalPrice = 0;
 let calendarAvailableFrom = null;
+let calendarOpenHour = null;
+let calendarCloseHour = null;
+
+// Resolved by the calendar callbacks below and read directly by the submit handler, instead of
+// re-parsing the (now multi-date) text field value.
+let bookingStartTime = null;
+let bookingEndTime = null;
+let bookingStartHour = null; // Only used for "hour" lease-type spaces
+let bookingEndHour = null;
+
+// While picking hours, remembers the first slot clicked so a second click can turn it into a range.
+let hourSelectionStart = null;
+
+// Formats a Date object as YYYY-MM-DD using LOCAL time fields (not toISOString, which converts
+// to UTC first and can silently roll the date back/forward a day depending on the user's timezone).
+function formatDateLocal(date) {
+    const year  = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day   = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Enables/disables the "Confirm Booking" button based on whether the current date selection is valid.
+function toggleConfirmButton(enabled) {
+    const confirmBtn = document.querySelector('.confirm-btn');
+    if (confirmBtn) confirmBtn.disabled = !enabled;
+}
 
 
 // Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID ----------------------------------------------------------------
@@ -77,6 +104,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     calendarLeaseType = spaceData.lease_time;
     calendarPrice = parseFloat(spaceData.price);
     calendarAvailableFrom = spaceData.available_from || null;
+    calendarOpenHour = spaceData.open_hour !== null && spaceData.open_hour !== undefined ? Number(spaceData.open_hour) : null;
+    calendarCloseHour = spaceData.close_hour !== null && spaceData.close_hour !== undefined ? Number(spaceData.close_hour) : null;
+
+    // For hourly spaces, show the booking window and swap the calendar label to reflect that
+    // only one day gets picked (hours are picked separately, right below).
+    if (calendarLeaseType === "hour" && calendarOpenHour !== null && calendarCloseHour !== null) {
+        document.getElementById("space-hours-info").style.display = "block";
+        document.getElementById("space-hours").textContent =
+            `${String(calendarOpenHour).padStart(2, "0")}:00 - ${String(calendarCloseHour).padStart(2, "0")}:00`;
+
+        const dateRangeLabel = document.getElementById("date-range-label");
+        if (dateRangeLabel) dateRangeLabel.textContent = "Select a Day:";
+    }
 
     //console.log('spaceData:', spaceData); // Debug data
 
@@ -101,6 +141,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     });
 
+    // Only now that calendarLeaseType/calendarPrice/etc. are definitely set (spaceData has
+    // finished loading) is it safe to build the booking calendar. Previously this lived in its
+    // own separate DOMContentLoaded listener, which raced against this one - depending on which
+    // network request finished first, the calendar could get initialized while calendarLeaseType
+    // was still "" and silently fall back to the wrong (range) picker.
+    await initBookingCalendar(spaceId);
 });
 // END Function to fetch space data by ID from the API. Fetches the space data from the API using the provided ID ------------------------------------------------------------
 
@@ -213,9 +259,10 @@ async function getReservationsByWorkspaceId(id) {
 
 
 // CALENDAR: Select the dates and calculate the value ---------------------------------------------------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const spaceId   = urlParams.get("id");
+// Called explicitly from the spaceData DOMContentLoaded handler above, once calendarLeaseType/
+// calendarPrice/calendarOpenHour/calendarCloseHour are guaranteed to already be set (see comment
+// at the call site for why this can't just be its own independent DOMContentLoaded listener).
+async function initBookingCalendar(spaceId) {
     const reservations = await getReservationsByWorkspaceId(spaceId);
     let occupiedDates = []; // Array to store occupied dates
     if (reservations.length > 0) {
@@ -233,52 +280,286 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? calendarAvailableFrom
         : todayStr;
 
-    flatpickr("#date-range", {
-        mode: "range",           // Allow date range selection
-        minDate: calendarMinDate, // Disallow past dates and dates before the space becomes available
-        disable: occupiedDates,  // Disable occupied dates - Returned by the API getReservationsByWorkspaceId(spaceId);
-        dateFormat: "Y-m-d",    // Set date format
-        onDayCreate: function (dObj, dStr, instance) {
-            const occupied = occupiedDates.includes(dStr); // Check if the date is occupied
-            if (occupied) {
-                // Apply a different color for occupied dates
-                dObj.classList.add("occupied");
+    if (calendarLeaseType === "day") {
+        // DAY-RATE SPACES: click a start day then an end day to pick a range in two clicks
+        // (like before), or click a single day and close the calendar to book just that one day.
+        // Either way, the price is (number of days covered, INCLUSIVE) x (daily price) - no
+        // hotel-style "nights" math, so a 1st-to-10th range is 10 days billed, not 9.
+        flatpickr("#date-range", {
+            mode: "range",
+            minDate: calendarMinDate,  // Disallow past dates and dates before the space becomes available
+            disable: occupiedDates,    // Disable occupied dates - Returned by getReservationsByWorkspaceId(spaceId)
+            dateFormat: "Y-m-d",
+            onDayCreate: function (dObj, dStr, instance) {
+                if (occupiedDates.includes(dStr)) {
+                    dObj.classList.add("occupied");
+                }
+            },
+            onChange: function (selectedDates) {
+                if (selectedDates.length === 0) {
+                    totalPrice = 0;
+                    bookingStartTime = null;
+                    bookingEndTime = null;
+                    document.getElementById("message").innerHTML = "";
+                    toggleConfirmButton(false);
+                    return;
+                }
+
+                // One date clicked so far: treat it as a (provisional) single-day booking.
+                // If the user clicks a second date next, this block re-runs and becomes a range.
+                if (selectedDates.length === 1) {
+                    const day = formatDateLocal(selectedDates[0]);
+                    bookingStartTime = day;
+                    bookingEndTime = day;
+                    totalPrice = calendarPrice;
+
+                    document.getElementById("message").innerHTML = `
+                        <p>You selected <strong>1 day</strong>.</p>
+                        <br>
+                        <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
+                        <p style="font-size:12px;color:#888;">Click an end date to book a range, or click outside the calendar to confirm just this day.</p>
+                    `;
+                    toggleConfirmButton(true);
+                    return;
+                }
+
+                // Two dates clicked: a full range.
+                const startStr = formatDateLocal(selectedDates[0]);
+                const endStr   = formatDateLocal(selectedDates[1]);
+                const spanDates = getDatesBetween(`${startStr} to ${endStr}`); // inclusive list of every day in the range
+
+                // Reservations are stored as a single continuous start/end range, so make sure
+                // none of the in-between days are already booked by someone else.
+                const hasOccupiedDayInRange = spanDates.some(d => occupiedDates.includes(d));
+                if (hasOccupiedDayInRange) {
+                    totalPrice = 0;
+                    bookingStartTime = null;
+                    bookingEndTime = null;
+                    document.getElementById("message").innerHTML = `
+                        <p style="color:#ff385c;">That range includes a day that's already booked. Please pick a different range.</p>
+                    `;
+                    toggleConfirmButton(false);
+                    return;
+                }
+
+                bookingStartTime = startStr;
+                bookingEndTime = endStr;
+                totalPrice = spanDates.length * calendarPrice;
+
+                document.getElementById("message").innerHTML = `
+                    <p>You selected <strong>${spanDates.length} day(s)</strong>.</p>
+                    <br>
+                    <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
+                `;
+                toggleConfirmButton(true);
             }
-        },        
-        onClose: function(selectedDates) {
-            if (selectedDates.length === 2) {
-                const startDate = new Date(selectedDates[0]);
-                const endDate   = new Date(selectedDates[1]);
-                const diffTime  = Math.abs(endDate - startDate);
+        });
+    } else if (calendarLeaseType === "hour") {
+        // HOUR-RATE SPACES: pick a single day, then pick an hour range (or a single hour) from
+        // the grid that appears below the calendar. Unlike day-rate spaces, a day here is NOT
+        // disabled just because it has *some* reservations on it - only specific hours are.
+        document.getElementById("hour-slots-section").style.display = "block";
+
+        flatpickr("#date-range", {
+            mode: "single",
+            minDate: calendarMinDate,
+            dateFormat: "Y-m-d",
+            onChange: function (selectedDates) {
+                // Starting over on a new day always clears any in-progress hour selection.
+                hourSelectionStart = null;
+                bookingStartHour = null;
+                bookingEndHour = null;
+                totalPrice = 0;
+                toggleConfirmButton(false);
+
+                if (selectedDates.length === 0) {
+                    bookingStartTime = null;
+                    bookingEndTime = null;
+                    document.getElementById("message").innerHTML = "";
+                    document.getElementById("hour-slots-grid").innerHTML = "";
+                    return;
+                }
+
+                const day = formatDateLocal(selectedDates[0]);
+                bookingStartTime = day;
+                bookingEndTime = day;
+
+                // Only reservations that already exist on this exact day matter for the hour grid.
+                const dayReservations = reservations.filter(r => r.start_time === day);
+                renderHourSlots(dayReservations);
+
+                document.getElementById("message").innerHTML = `
+                    <p style="font-size:12px;color:#888;">Pick a start hour, then an end hour (or just one hour and click away).</p>
+                `;
+            }
+        });
+    } else {
+        // WEEK/MONTH-RATE SPACES: unchanged check-in/check-out range picker.
+        flatpickr("#date-range", {
+            mode: "range",
+            minDate: calendarMinDate,
+            disable: occupiedDates,
+            dateFormat: "Y-m-d",
+            onDayCreate: function (dObj, dStr, instance) {
+                if (occupiedDates.includes(dStr)) {
+                    dObj.classList.add("occupied");
+                }
+            },
+            onClose: function (selectedDates) {
+                if (selectedDates.length !== 2) {
+                    toggleConfirmButton(false);
+                    return;
+                }
+
+                bookingStartTime = formatDateLocal(selectedDates[0]);
+                bookingEndTime   = formatDateLocal(selectedDates[1]);
+
+                const diffTime = Math.abs(selectedDates[1] - selectedDates[0]);
                 let totalUnits;
 
-                // Check which unit to use (day, week, month) and Do the calculation -----------------------
-                // Calculation units: day, week, month
-                if (calendarLeaseType === "day") {
-                    totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                } else if (calendarLeaseType === "week") {
+                if (calendarLeaseType === "week") {
                     totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
                 } else if (calendarLeaseType === "month") {
                     totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30));
                 } else {
-                    totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Default para dias
+                    totalUnits = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Fallback to days
                 }
 
-                // Calculate the total price, based on the selected unit and price
                 totalPrice = totalUnits * calendarPrice;
 
-                // Update the message in the HTML
                 document.getElementById("message").innerHTML = `
                     <p>You selected <strong>${totalUnits} ${calendarLeaseType}(s)</strong>.</p>
                     <br>
                     <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
                 `;
+                toggleConfirmButton(true);
             }
+        });
+    }
+    // END CALENDAR - Initialize flatpickr for the date range input --------------------------------------------------------------
+}
+// END CALENDAR: Select the dates and calculate the value -----------------------------------------------------------------------------------------------------------------
+
+
+
+// HOUR SLOT PICKER - Builds the clickable hour grid for "hour" lease-type spaces, and handles
+// picking a start/end hour (or a single hour) the same way the day calendar handles single vs
+// range picks: first click = provisional 1-hour booking, second click on a different slot = range.
+function renderHourSlots(dayReservations) {
+    const grid = document.getElementById("hour-slots-grid");
+    grid.innerHTML = "";
+
+    if (calendarOpenHour === null || calendarCloseHour === null) return;
+
+    // Every hour already covered by an existing reservation that day, e.g. a 9-12 booking marks
+    // hours 9, 10 and 11 as occupied (the slot LABELED "09:00" covers 09:00-10:00, and so on).
+    const occupiedHours = new Set();
+    dayReservations.forEach(reservation => {
+        for (let h = reservation.start_hour; h < reservation.end_hour; h++) {
+            occupiedHours.add(h);
         }
     });
-    // END CALENDAR - Initialize flatpickr for the date range input --------------------------------------------------------------
+
+    for (let hour = calendarOpenHour; hour < calendarCloseHour; hour++) {
+        const slot = document.createElement("div");
+        slot.className = "hour-slot";
+        slot.dataset.hour = hour;
+        slot.textContent = `${String(hour).padStart(2, "0")}:00 - ${String(hour + 1).padStart(2, "0")}:00`;
+
+        if (occupiedHours.has(hour)) {
+            slot.classList.add("occupied");
+        } else {
+            slot.addEventListener("click", () => handleHourSlotClick(hour, occupiedHours));
+        }
+
+        grid.appendChild(slot);
+    }
+}
+
+function handleHourSlotClick(hour, occupiedHours) {
+    if (hourSelectionStart === null) {
+        // First click of a new selection: a provisional 1-hour booking.
+        hourSelectionStart = hour;
+        bookingStartHour = hour;
+        bookingEndHour = hour + 1;
+        totalPrice = calendarPrice;
+
+        highlightHourRange(bookingStartHour, bookingEndHour);
+        document.getElementById("message").innerHTML = `
+            <p>You selected <strong>1 hour</strong> (${String(hour).padStart(2, "0")}:00 - ${String(hour + 1).padStart(2, "0")}:00).</p>
+            <br>
+            <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
+            <p style="font-size:12px;color:#888;">Click another hour to extend the range, or confirm to book just this hour.</p>
+        `;
+        toggleConfirmButton(true);
+        return;
+    }
+
+    // Second click: turn it into a range covering everything between the two clicked hours.
+    const rangeStart = Math.min(hourSelectionStart, hour);
+    const rangeEnd = Math.max(hourSelectionStart, hour) + 1; // half-open range, e.g. 9 to 12 = 9,10,11
+
+    let hasOccupiedHourInRange = false;
+    for (let h = rangeStart; h < rangeEnd; h++) {
+        if (occupiedHours.has(h)) hasOccupiedHourInRange = true;
+    }
+
+    // Whichever hour was just clicked starts a fresh selection next time.
+    hourSelectionStart = null;
+
+    if (hasOccupiedHourInRange) {
+        totalPrice = 0;
+        bookingStartHour = null;
+        bookingEndHour = null;
+        clearHourHighlight();
+        document.getElementById("message").innerHTML = `
+            <p style="color:#ff385c;">That range includes an hour that's already booked. Please pick a different range.</p>
+        `;
+        toggleConfirmButton(false);
+        return;
+    }
+
+    bookingStartHour = rangeStart;
+    bookingEndHour = rangeEnd;
+    totalPrice = (rangeEnd - rangeStart) * calendarPrice;
+
+    highlightHourRange(rangeStart, rangeEnd);
+    document.getElementById("message").innerHTML = `
+        <p>You selected <strong>${rangeEnd - rangeStart} hour(s)</strong> (${String(rangeStart).padStart(2, "0")}:00 - ${String(rangeEnd).padStart(2, "0")}:00).</p>
+        <br>
+        <p>Total Price: <strong>C$ ${totalPrice.toLocaleString()}</strong></p>
+    `;
+    toggleConfirmButton(true);
+}
+
+function highlightHourRange(startHour, endHour) {
+    document.querySelectorAll("#hour-slots-grid .hour-slot").forEach(slot => {
+        const hour = Number(slot.dataset.hour);
+        slot.classList.toggle("selected", hour >= startHour && hour < endHour);
+    });
+}
+
+function clearHourHighlight() {
+    document.querySelectorAll("#hour-slots-grid .hour-slot.selected").forEach(slot => {
+        slot.classList.remove("selected");
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const clearBtn = document.getElementById("hour-slots-clear-btn");
+    if (!clearBtn) return;
+
+    clearBtn.addEventListener("click", function () {
+        hourSelectionStart = null;
+        bookingStartHour = null;
+        bookingEndHour = null;
+        totalPrice = 0;
+        clearHourHighlight();
+        document.getElementById("message").innerHTML = "";
+        toggleConfirmButton(false);
+    });
 });
-// END CALENDAR: Select the dates and calculate the value -----------------------------------------------------------------------------------------------------------------
+// END HOUR SLOT PICKER -----------------------------------------------------------------------------------------------------
 
 
 
@@ -322,7 +603,45 @@ function getOccupiedDates(reservations) {
 
 
 
-// BOOKING CONFIRMATION - After select the dates and confirm booking 
+// BOOKING SUCCESS MODAL - Shown after a reservation is created, replacing the old alert() ----------------------
+function showBookingSuccessModal(spaceTitle, startTime, endTime, rentTotal, startHour, endHour) {
+    const modal = document.getElementById("bookingSuccessModal");
+    const message = document.getElementById("bookingSuccessModalMessage");
+
+    if (!modal) return;
+
+    const messageText = (startHour !== null && startHour !== undefined)
+        ? `You booked ${spaceTitle} on ${startTime} from ${String(startHour).padStart(2, "0")}:00 to ${String(endHour).padStart(2, "0")}:00. Total: C$ ${Number(rentTotal).toFixed(2)}.`
+        : `You booked ${spaceTitle} from ${startTime} to ${endTime}. Total: C$ ${Number(rentTotal).toFixed(2)}.`;
+
+    message.textContent = messageText;
+    modal.classList.add("open");
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("bookingSuccessModal");
+    const closeBtn = document.getElementById("bookingSuccessModalCloseBtn");
+    const profileBtn = document.getElementById("bookingSuccessModalProfileBtn");
+
+    if (!modal) return;
+
+    // "Book another space" - close the modal and refresh the page so the calendar/occupied
+    // dates reflect the reservation that was just created.
+    if (closeBtn) {
+        closeBtn.addEventListener("click", function () {
+            window.location.reload();
+        });
+    }
+
+    if (profileBtn) {
+        profileBtn.addEventListener("click", function () {
+            window.location.href = "/user_profile.html";
+        });
+    }
+});
+
+
+// BOOKING CONFIRMATION - After select the dates and confirm booking
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("form-space");
 
@@ -342,19 +661,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             } 
 
-            // Fetch the occupied dates for the space
-            const workspaceId  = new URLSearchParams(window.location.search).get('id');  // Get space_id from URL
-            const dateRange    = document.getElementById("date-range").value; // Assuming the value contains the date range
-            //const selectedDates = document.getElementById("date-range").value; // Assuming the value contains the date range
-            // Assuming the selectedDates are split into an array (e.g. '2025-03-01 to 2025-03-10')
-            //const datesArray = getDatesBetween(selectedDates); // Get all dates between the selected range
+            const workspaceId = new URLSearchParams(window.location.search).get('id');  // Get space_id from URL
 
-            // Extract start and end dates from the date range field (format: yyyy-mm-dd to yyyy-mm-dd)
-            const [start_time, end_time] = dateRange.split(' to ');
-
-            // Define the lease type (day/week/month) — this should come from your workspace info
+            // Define the lease type (day/hour) — this should come from your workspace info
             const lease_time = document.getElementById("space-lease").textContent; // dynamically get from the workspace object
 
+            // bookingStartTime/bookingEndTime are set by the calendar's onChange/onClose callbacks above.
+            // For "hour" spaces, bookingStartHour/bookingEndHour must also be set.
+            const hasValidDates = bookingStartTime && bookingEndTime && totalPrice;
+            const hasValidHours = lease_time !== 'hour' || (bookingStartHour !== null && bookingEndHour !== null);
+
+            if (!hasValidDates || !hasValidHours) {
+                alert('Please select valid dates before confirming.');
+                return;
+            }
+
+            const start_time = bookingStartTime;
+            const end_time = bookingEndTime;
 
             // Define the price per unit and calculate total
             const rent_price = parseFloat(document.getElementById('space-price').textContent.replace(/[^\d.]/g, ''));
@@ -363,10 +686,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const status = 'confirmed';
             const payment_status = 'paid';
 
-            console.log('lease_time:',lease_time);
-
             try {
-                const response = await fetch('/api/spaces/workspaces/reservations_insert', {
+                const response = await apiFetch('/api/spaces/workspaces/reservations_insert', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -377,19 +698,20 @@ document.addEventListener("DOMContentLoaded", function () {
                         start_time: start_time,
                         end_time: end_time,
                         lease_time: lease_time,
+                        start_hour: lease_time === 'hour' ? bookingStartHour : undefined,
+                        end_hour: lease_time === 'hour' ? bookingEndHour : undefined,
                         rent_price: rent_price,
                         rent_total: rent_total,
                         status: status,
                         payment_status: payment_status
                     })
                 });
-        
-                
+
                 const result = await response.json();
-        
-                if (result.success) {
-                    alert('Reservation successfully created!');
-                    // Optionally redirect or reset UI
+
+                if (response.ok && result.success) {
+                    const spaceTitle = document.getElementById('space-title').textContent;
+                    showBookingSuccessModal(spaceTitle, start_time, end_time, rent_total, bookingStartHour, bookingEndHour);
                 } else {
                     alert(`Error creating reservation: ${result.error}`);
                 }
@@ -412,7 +734,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (form) {
         form.addEventListener("submit", function (event) {
             event.preventDefault(); // prevents the default form submission
-            alert("voce clicou em reservation");
+            alert("you clicked reservation");
             // Check if user is logged in
             if (!user) {
                 alert('You are not logged in. Please log in and do the reservation again.');
@@ -443,7 +765,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             //console.log('Sending body data:', bodyData);  // Log the body data
 
-            // Enviar a atualização das datas para o servidor
+            // Send the updated dates to the server
             fetch("http://localhost:3000/api/spaces/update-occupied-dates", {
                 method: "POST",
                 headers: {

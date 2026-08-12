@@ -103,6 +103,24 @@ body {
     color: #666;
 }
 
+.space-reservations-btn {
+    margin-top: 10px;
+    width: 100%;
+    background: #eaf3ff;
+    color: #007bff;
+    border: 1px solid #cfe3ff;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.space-reservations-btn:hover {
+    background: #d9ebff;
+}
+
 /* Owned space card wrapper + delete icon --------------------------------------------------------------------------*/
 .space-card-wrapper {
     position: relative;

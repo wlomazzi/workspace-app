@@ -7,10 +7,9 @@
     <link rel="stylesheet" href= "/components/navbar.css">
     <link rel="stylesheet" href= "/components/footer.css">
     <link rel="stylesheet" href= "/css/styles_space_details.css">
+    <script defer src="/scripts/auth-fetch.js"></script>
     <script defer src="/components/navbar.js"></script>
     <script defer src="/components/footer.js"></script>
-    <!-- Your custom script -->
-    <script src="/scripts/calendar.js"></script>    
 
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -39,7 +38,8 @@
                 <p><strong>Price:</strong> <strong><span id="space-price"></span> / <span id="space-lease"></strong></span></p>
                 <p><strong>Neighborhood:</strong> <span id="space-neighborhood"></span></p>
                 <p><strong>Seats Available:</strong> <span id="space-seats"></span></p>
-                <p><strong>Type:</strong> <span id="space-type"></span></p><br>
+                <p><strong>Type:</strong> <span id="space-type"></span></p>
+                <p id="space-hours-info" style="display:none;"><strong>Hours:</strong> <span id="space-hours"></span></p><br>
                 <!--<p><strong>Available From:</strong> <span id="space-available"></span></p>-->
                 <p><span id="space-amenities"></span></p><br>
                 <p></span><span id="space-rating"></span></p>
@@ -54,16 +54,42 @@
             <h3>Book space</h3>
             <br>
             <form id="form-space">
-                <label for="date-range">Select Dates:</label><br><br>
+                <label for="date-range" id="date-range-label">Select Dates:</label><br><br>
                 <input type="text" id="date-range" class="calendar-input">
+
+                <div id="hour-slots-section" style="display:none;">
+                    <br>
+                    <label>Select Hours:</label>
+                    <div id="hour-slots-grid" class="hour-slots-grid"></div>
+                    <button type="button" id="hour-slots-clear-btn" class="hour-slots-clear-btn">Clear hours</button>
+                </div>
+
                 <div id="message"></div>
                 <br><br><br>
                 <!-- Confirm button -->
-                <button type="submit" class="confirm-btn">Confirm Booking</button>
+                <button type="submit" class="confirm-btn" disabled>Confirm Booking</button>
             </form>
         </div>
         
     </div>
+
+    <!-- Booking confirmation modal - replaces the old alert('Reservation successfully created!') -->
+    <div id="bookingSuccessModal" class="booking-success-modal">
+        <div class="booking-success-modal-content">
+            <div class="booking-success-modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+            </div>
+            <h3>Reservation confirmed</h3>
+            <p id="bookingSuccessModalMessage">Your booking was created successfully.</p>
+            <div class="booking-success-modal-buttons">
+                <button type="button" id="bookingSuccessModalCloseBtn" class="booking-success-modal-btn booking-success-modal-btn-secondary">Book another space</button>
+                <button type="button" id="bookingSuccessModalProfileBtn" class="booking-success-modal-btn">View my reservations</button>
+            </div>
+        </div>
+    </div>
+
     <script src="/scripts/space_details.js"></script>
 </body>
 </html>

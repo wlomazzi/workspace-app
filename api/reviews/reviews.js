@@ -1,5 +1,6 @@
 import express from 'express';
 import { supabase } from '../../lib/supabase.js';
+import { requireAuth, requireCsrf } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -10,19 +11,18 @@ function todayStr() {
     return new Date().toISOString().split('T')[0];
 }
 
-// GET /api/reviews/pending?user_id=...
-// Returns the user's reservations that have already ended and don't have a review yet,
-// combined with the workspace info needed to render the "rate your stay" card.
-router.get('/pending', async (req, res) => {
-    const { user_id } = req.query;
-
-    if (!user_id) {
-        return res.status(400).json({ error: 'user_id is required' });
-    }
+// GET /api/reviews/pending
+// Returns the logged-in user's reservations that have already ended and don't have a review yet,
+// combined with the workspace info needed to render the "rate your stay" card. Identity comes
+// from the verified session cookie now, not a client-supplied user_id query param.
+router.get('/pending', requireAuth, async (req, res) => {
+    const user_id = req.userId;
 
     try {
-        // 1. Reservations belonging to this user that have already finished.
-        const { data: pastReservations, error: reservationsError } = await supabase
+        // 1. Reservations belonging to this user that have already finished. Uses the JWT-scoped
+        // client - reservations RLS only allows a user to read their own reservations (or ones on
+        // a workspace they own), so the plain anon client would always return nothing here.
+        const { data: pastReservations, error: reservationsError } = await req.supabaseAuthed
             .from('reservations')
             .select('*')
             .eq('user_id', user_id)
@@ -89,12 +89,13 @@ router.get('/pending', async (req, res) => {
 
 
 // POST /api/reviews/submit
-// Body: { user_id, reservation_id, rating, comment }
-router.post('/submit', async (req, res) => {
-    const { user_id, reservation_id, rating, comment } = req.body;
+// Body: { reservation_id, rating, comment }
+router.post('/submit', requireAuth, requireCsrf, async (req, res) => {
+    const { reservation_id, rating, comment } = req.body;
+    const user_id = req.userId;
 
-    if (!user_id || !reservation_id || !rating) {
-        return res.status(400).json({ error: 'user_id, reservation_id and rating are required' });
+    if (!reservation_id || !rating) {
+        return res.status(400).json({ error: 'reservation_id and rating are required' });
     }
 
     const ratingNumber = Number(rating);
@@ -105,7 +106,7 @@ router.post('/submit', async (req, res) => {
     try {
         // Confirm the reservation exists, belongs to this user, and has actually ended -
         // mirrors the same "does this belong to the user" pattern used for workspaces.
-        const { data: reservation, error: reservationError } = await supabase
+        const { data: reservation, error: reservationError } = await req.supabaseAuthed
             .from('reservations')
             .select('*')
             .eq('id', reservation_id)
@@ -120,7 +121,7 @@ router.post('/submit', async (req, res) => {
             return res.status(400).json({ error: 'You can only review a reservation after it has ended.' });
         }
 
-        const { error: insertError } = await supabase
+        const { error: insertError } = await req.supabaseAuthed
             .from('reviews')
             .insert({
                 reservation_id,

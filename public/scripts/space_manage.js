@@ -15,10 +15,48 @@ const pendingImageFiles = {
 
 
 
+// HOUR WINDOW FIELDS - populate the Opening/Closing hour <select> options and show/hide them
+// depending on whether "Lease time" is set to "Hour" -------------------------------------------
+function populateHourSelect(selectEl, maxHour) {
+    selectEl.innerHTML = "";
+    for (let hour = 0; hour <= maxHour; hour++) {
+        const option = document.createElement("option");
+        option.value = hour;
+        option.textContent = `${String(hour).padStart(2, "0")}:00`;
+        selectEl.appendChild(option);
+    }
+}
+
+function toggleHourWindowFields() {
+    const leaseTime = document.getElementById("lease_time").value;
+    const hourFields = document.getElementById("hourWindowFields");
+    if (!hourFields) return;
+    hourFields.style.display = leaseTime === "hour" ? "block" : "none";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const openHourSelect = document.getElementById("open_hour");
+    const closeHourSelect = document.getElementById("close_hour");
+
+    if (openHourSelect) populateHourSelect(openHourSelect, 23); // 00:00 to 23:00
+    if (closeHourSelect) populateHourSelect(closeHourSelect, 24); // 00:00 to 24:00
+    if (closeHourSelect) closeHourSelect.value = 18; // sensible default (6pm)
+
+    toggleHourWindowFields();
+
+    const leaseTimeSelect = document.getElementById("lease_time");
+    if (leaseTimeSelect) {
+        leaseTimeSelect.addEventListener("change", toggleHourWindowFields);
+    }
+});
+// END HOUR WINDOW FIELDS -------------------------------------------------------------------------
+
+
+
 document.addEventListener("DOMContentLoaded", async function () {
     const spaceId = new URLSearchParams(window.location.search).get('space_id');  // Get space_id from URL
 
-    // Seleciona todas as imagens (thumbnails) clicáveis
+    // Select all clickable images (thumbnails)
     const imageBoxes = document.querySelectorAll(".image-box");
 
     imageBoxes.forEach((box, index) => {
@@ -26,14 +64,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         const image = document.getElementById(`image${index + 1}`);
         const imageCode = `image_0${index + 1}`;
 
-        // Torna a imagem clicável
+        // Makes the image clickable
         image.addEventListener("click", function() {
-            // Aciona o input file clicando na imagem
+            // Triggers the file input by clicking the image
             imageInput.click();
         });
 
-        // Manipula a seleção de arquivos no input: só gera a prévia local e guarda o
-        // arquivo em memória. O upload de verdade só acontece quando o form é salvo.
+        // Handles the file selection on the input: only generates the local preview and
+        // keeps the file in memory. The actual upload only happens when the form is saved.
         imageInput.addEventListener("change", function(event) {
             const file = event.target.files[0];
 
@@ -42,11 +80,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 const reader = new FileReader();
                 reader.onloadend = function() {
-                    // Substitui a imagem do thumbnail pela imagem selecionada
+                    // Replaces the thumbnail image with the selected image
                     image.src = reader.result;
-                    image.style.display = "block"; // Torna a imagem visível
+                    image.style.display = "block"; // Makes the image visible
                 };
-                reader.readAsDataURL(file); // Lê a imagem como base64 (só para prévia)
+                reader.readAsDataURL(file); // Reads the image as base64 (preview only)
             }
         });
     });
@@ -96,6 +134,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         document.getElementById("address").value = workspace.address;
         document.getElementById("neighborhood").value = workspace.neighborhood;
         document.getElementById("available_from").value = workspace.available_from;
+
+        // Only relevant when lease_time is "hour" - populate + reveal the opening/closing hour fields.
+        if (workspace.open_hour !== null && workspace.open_hour !== undefined) {
+            document.getElementById("open_hour").value = workspace.open_hour;
+        }
+        if (workspace.close_hour !== null && workspace.close_hour !== undefined) {
+            document.getElementById("close_hour").value = workspace.close_hour;
+        }
+        toggleHourWindowFields();
 
         latitude  = workspace.latitude;
         longitude = workspace.longitude;
@@ -179,6 +226,15 @@ document.getElementById("spaceForm").addEventListener("submit", async function(e
         return;
     }
 
+    const leaseTimeValue = document.getElementById("lease_time").value;
+    const openHourValue = leaseTimeValue === "hour" ? parseInt(document.getElementById("open_hour").value, 10) : null;
+    const closeHourValue = leaseTimeValue === "hour" ? parseInt(document.getElementById("close_hour").value, 10) : null;
+
+    if (leaseTimeValue === "hour" && openHourValue >= closeHourValue) {
+        alert("Closing hour must be after opening hour.");
+        return;
+    }
+
     // Note: image_01..04 are intentionally NOT part of this payload. They're only ever
     // written by the /upload_image endpoint, once we know the workspace's real id.
     const workspaceData = {
@@ -191,7 +247,9 @@ document.getElementById("spaceForm").addEventListener("submit", async function(e
         neighborhood: document.getElementById("neighborhood").value,
         seats: document.getElementById("workspace_seats").value,
         type: document.getElementById("type").value,
-        lease_time: document.getElementById("lease_time").value,
+        lease_time: leaseTimeValue,
+        open_hour: openHourValue,
+        close_hour: closeHourValue,
         latitude: latitude,
         longitude: longitude,
         available_from: document.getElementById("available_from").value,
@@ -212,7 +270,7 @@ document.getElementById("spaceForm").addEventListener("submit", async function(e
 
     try {
         // Step 1: save the workspace's text/boolean fields first.
-        const response = await fetch(`/api/spaces/workspaces/${api_type}`, {
+        const response = await apiFetch(`/api/spaces/workspaces/${api_type}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(workspaceData)
@@ -267,11 +325,8 @@ async function uploadImageFile(file, spaceId, imageCode) {
     formData.append("image_code", imageCode);
 
     try {
-        const response = await fetch("/api/spaces/workspaces/upload_image", {
+        const response = await apiFetch("/api/spaces/workspaces/upload_image", {
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-            },
             body: formData
         });
 
@@ -326,7 +381,7 @@ async function fetchCoordinatesFromAddress() {
     try {
         const response = await fetch(url, {
             headers: {
-                "User-Agent": "work4fun-app/1.0 (email@exemplo.com)"
+                "User-Agent": "work4fun-app/1.0 (email@example.com)"
             }
         });
 
@@ -370,9 +425,9 @@ async function fetchCoordinatesFromAddress() {
   function showAddressOptions(addresses) {
     const modal = document.getElementById("addressModal");
     const list = document.getElementById("addressList");
-    list.innerHTML = ""; // Limpa a lista
+    list.innerHTML = ""; // Clear the list
 
-    // Cria as opções de endereço
+    // Create the address options
     addresses.forEach((addr, index) => {
         const li = document.createElement("li");
         li.innerHTML = `
