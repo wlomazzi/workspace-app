@@ -125,8 +125,8 @@ if (featuredSection) {
     featuredSection.innerHTML = `
     <div class="search-container">
         <div class="search-bar">
-            <label for="location">Neighborhood</label>
-            <input type="text" id="location" placeholder="Enter neighborhood">
+            <label for="location">Location</label>
+            <input type="text" id="location" placeholder="Enter location">
             
             <label for="check-in">Check-in</label>
             <input type="date" id="check-in">

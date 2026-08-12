@@ -102,9 +102,9 @@ router.post("/filter_spaces", async (req, res) => {
             .select('*')
             .eq('active', true); // Active workspaces only
 
-        // Filtrando por Neighborhood
+        // Filtering by address (partial match - e.g. typing "calgary" matches any address containing it)
         if (location) {
-            query = query.ilike('neighborhood', `%${location}%`);  // Filter by neighborhood with LIKE (if you enter part of the name)
+            query = query.ilike('address', `%${location}%`);
         }
 
         // Filtering by availability date (check-in / check-out)
