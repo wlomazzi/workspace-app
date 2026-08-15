@@ -38,6 +38,59 @@ body {
     margin-bottom: 10px;
 }
 
+/* Profile tabs ("My Spaces" / "My Bookings") - segmented-control style so the two
+   views read clearly as a switcher, not as one continuous block. -------------------- */
+.profile-tabs {
+    display: inline-flex;
+    gap: 2px;
+    margin-top: 20px;
+    padding: 4px;
+    background: #eef0f3;
+    border-radius: 10px;
+}
+
+.profile-tab-btn {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 7px;
+    background: none;
+    color: #5f6368;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.profile-tab-btn:hover {
+    color: #222;
+}
+
+.profile-tab-btn.active {
+    background: #ffffff;
+    color: #007bff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.profile-tab-panel {
+    padding-top: 24px;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 16px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.section-header h3 {
+    margin: 0;
+}
+
 .edit-btn, 
 .add-new-btn{
     margin-top: 10px;
@@ -256,4 +309,434 @@ body {
 .delete-modal-confirm:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+/* Rented-spaces report + owned-spaces report share the same report-* component styles --------- */
+.coworker-spaces-section,
+.owner-spaces-section {
+    /* Palette slots (validated default: see dataviz skill references/palette.md) */
+    --report-surface:        #fcfcfb;
+    --report-text-primary:   #0b0b0b;
+    --report-text-secondary: #52514e;
+    --report-text-muted:     #898781;
+    --report-gridline:       #e1e0d9;
+    --report-series-1:       #2a78d6; /* categorical slot 1 - blue, used for the chart + "upcoming" */
+    --report-good:           #0ca30c; /* status: ongoing */
+    --report-good-bg:        #e6f6e6;
+    --report-upcoming-bg:    #e8f1fc;
+    --report-critical:       #d03b3b;
+}
+
+/* Stat tiles ------------------------------------------------------------------------------------- */
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 16px 0 20px;
+}
+
+.stat-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--report-surface);
+    border: 1px solid var(--report-gridline);
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--report-text-secondary);
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--report-text-primary);
+    font-variant-numeric: proportional-nums;
+}
+
+.report-empty-summary {
+    color: var(--report-text-secondary);
+    font-size: 14px;
+    margin: 16px 0 20px;
+}
+
+/* Spending-by-month chart -------------------------------------------------------------------------- */
+.report-chart-card {
+    background: var(--report-surface);
+    border: 1px solid var(--report-gridline);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.report-chart-header h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--report-text-primary);
+}
+
+.report-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    height: 160px;
+    padding-top: 8px;
+}
+
+.chart-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    height: 100%;
+    min-width: 40px;
+}
+
+.chart-value {
+    font-size: 12px;
+    color: var(--report-text-secondary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.chart-bar-track {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    width: 24px;
+}
+
+.chart-bar {
+    width: 24px;
+    background: var(--report-series-1);
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+}
+
+.chart-axis-label {
+    font-size: 12px;
+    color: var(--report-text-muted);
+}
+
+.report-chart-empty {
+    color: var(--report-text-secondary);
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Toolbar: filter, search, view toggle, export ------------------------------------------------------ */
+.report-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.report-toolbar-left,
+.report-toolbar-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.report-select,
+.report-search {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 7px 10px;
+    border: 1px solid var(--report-gridline);
+    border-radius: 6px;
+    background: var(--report-surface);
+    color: var(--report-text-primary);
+}
+
+.report-search {
+    min-width: 220px;
+}
+
+.report-period-custom {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.report-date-input {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 8px;
+    border: 1px solid var(--report-gridline);
+    border-radius: 6px;
+    background: var(--report-surface);
+    color: var(--report-text-primary);
+}
+
+.report-period-sep {
+    font-size: 12px;
+    color: var(--report-text-muted);
+}
+
+.report-clear-btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 4px;
+    border: none;
+    background: none;
+    color: var(--report-text-secondary);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.report-clear-btn:hover {
+    color: var(--report-text-primary);
+}
+
+.report-view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--report-gridline);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.report-view-btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border: none;
+    background: var(--report-surface);
+    color: var(--report-text-secondary);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.report-view-btn + .report-view-btn {
+    border-left: 1px solid var(--report-gridline);
+}
+
+.report-view-btn.active {
+    background: var(--report-series-1);
+    color: #fff;
+}
+
+.report-export-btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border: 1px solid var(--report-gridline);
+    border-radius: 6px;
+    background: var(--report-surface);
+    color: var(--report-text-primary);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.report-export-btn:hover {
+    background: var(--report-gridline);
+}
+
+/* Table view ----------------------------------------------------------------------------------------- */
+.report-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 10px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.report-table thead th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--report-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--report-gridline);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.report-table thead th.sorted {
+    color: var(--report-text-primary);
+}
+
+.report-table thead th .sort-arrow {
+    font-size: 10px;
+    margin-left: 4px;
+    color: var(--report-series-1);
+}
+
+.report-table-row {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.report-table-row:hover {
+    background: #f5f7fa;
+}
+
+.report-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--report-gridline);
+    color: var(--report-text-primary);
+    vertical-align: middle;
+}
+
+.report-table-space {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.report-table-space img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.report-table-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.report-empty-state {
+    color: var(--report-text-secondary);
+    font-size: 14px;
+    padding: 24px 0;
+    text-align: center;
+}
+
+/* Status badges - icon (dot) + label, never color alone --------------------------------------------- */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-upcoming {
+    background: var(--report-upcoming-bg);
+    color: var(--report-series-1);
+}
+.status-upcoming .status-dot { background: var(--report-series-1); }
+
+.status-ongoing {
+    background: var(--report-good-bg);
+    color: var(--report-good);
+}
+.status-ongoing .status-dot { background: var(--report-good); }
+
+.status-completed {
+    background: #eeeeec;
+    color: var(--report-text-secondary);
+}
+.status-completed .status-dot { background: var(--report-text-muted); }
+
+/* Owned-spaces table: actions column (view reservations + delete) ----------------------------------- */
+.report-table-actions-head {
+    text-align: right;
+}
+
+.report-table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.report-row-action-btn {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    background: #eaf3ff;
+    color: #007bff;
+    border: 1px solid #cfe3ff;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.report-row-action-btn:hover {
+    background: #d9ebff;
+}
+
+.report-row-delete-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid var(--report-gridline);
+    border-radius: 50%;
+    color: #6b6b6b;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.report-row-delete-btn:hover {
+    background: #ff385c;
+    color: #fff;
+    border-color: #ff385c;
+}
+
+.report-row-delete-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Extra meta line ("3 bookings · C$150 earned") shown on owned-space cards -------------------------- */
+.report-card-meta {
+    font-size: 12px;
+    color: var(--report-text-secondary);
+}
+
+@media (max-width: 640px) {
+    .report-search {
+        min-width: 0;
+        flex: 1;
+    }
+    .report-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .report-toolbar-left,
+    .report-toolbar-right {
+        justify-content: space-between;
+    }
+    .profile-tabs {
+        flex-wrap: wrap;
+    }
 }

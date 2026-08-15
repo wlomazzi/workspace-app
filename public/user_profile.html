@@ -29,18 +29,153 @@
                 </div>
             </div>
             
-            <!-- Owned Spaces Section -->
-            <div class="owner-spaces-section">
-                <h3>Work4Fun - your spaces available</h3>
-                <button class="add-new-btn">Add new space</button><br><br>
-                <div id="owned-spaces" class="spaces-list"></div>
+            <!-- Tabs: only shown for confirmed owners (there's nothing to switch between otherwise) -->
+            <div class="profile-tabs" id="profile-tabs" style="display:none;">
+                <button type="button" class="profile-tab-btn active" id="tab-btn-owned" data-tab="owned">Manage your spaces</button>
+                <button type="button" class="profile-tab-btn" id="tab-btn-rented" data-tab="rented">My Bookings</button>
             </div>
-            <hr class="owner-line" style="border: 1px solid #ccc; margin: 20px 0;">
 
-            <!-- Rented Spaces Section -->
-            <div class="coworker-spaces-section">
-                <h3>Work4Fun - spaces rented by you</h3><br>
-                <div id="rented-spaces" class="spaces-list"></div>
+            <!-- Owned Spaces Panel -->
+            <div class="profile-tab-panel" id="tab-panel-owned" style="display:none;">
+                <div class="owner-spaces-section">
+                    <div class="section-header">
+                        <h3>Manage your spaces</h3>
+                        <button class="add-new-btn" style="display:none;">Add new space</button>
+                    </div>
+
+                    <!-- Report: summary stat tiles -->
+                    <div class="report-summary" id="owned-report-summary"></div>
+
+                    <!-- Report: revenue by month chart -->
+                    <div class="report-chart-card">
+                        <div class="report-chart-header">
+                            <h4>Revenue by month</h4>
+                        </div>
+                        <div class="report-chart" id="owned-report-chart"></div>
+                    </div>
+
+                    <!-- Report: toolbar (filter, search, view toggle, export) -->
+                    <div class="report-toolbar">
+                        <div class="report-toolbar-left">
+                            <select id="owned-filter-type" class="report-select">
+                                <option value="all">All types</option>
+                                <option value="meeting_room">Meeting room</option>
+                                <option value="private_office">Private office</option>
+                                <option value="open_desk">Open desk</option>
+                            </select>
+                            <select id="owned-filter-location" class="report-select">
+                                <option value="all">All locations</option>
+                            </select>
+                            <input type="search" id="owned-search" class="report-search" placeholder="Search by space or location...">
+                            <button type="button" id="owned-clear-filters-btn" class="report-clear-btn">Clear filters</button>
+                        </div>
+                        <div class="report-toolbar-right">
+                            <div class="report-view-toggle" role="group" aria-label="Toggle view">
+                                <button type="button" id="owned-view-table-btn" class="report-view-btn active">Table</button>
+                                <button type="button" id="owned-view-cards-btn" class="report-view-btn">Cards</button>
+                            </div>
+                            <button type="button" id="owned-export-csv-btn" class="report-export-btn">Export CSV</button>
+                        </div>
+                    </div>
+
+                    <!-- Report: table view (default) -->
+                    <div class="report-table-wrap" id="owned-report-table-wrap">
+                        <table class="report-table" id="owned-report-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="title">Space <span class="sort-arrow"></span></th>
+                                    <th data-sort="location">Location <span class="sort-arrow"></span></th>
+                                    <th data-sort="price">Price <span class="sort-arrow"></span></th>
+                                    <th data-sort="type">Type <span class="sort-arrow"></span></th>
+                                    <th data-sort="bookings">Bookings <span class="sort-arrow"></span></th>
+                                    <th data-sort="revenue">Revenue <span class="sort-arrow"></span></th>
+                                    <th class="report-table-actions-head">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="owned-spaces-table-body"></tbody>
+                        </table>
+                        <p class="report-empty-state" id="owned-report-empty-state" style="display:none;">No spaces found.</p>
+                    </div>
+
+                    <!-- Card view (hidden by default, toggled via "Cards" button) -->
+                    <div id="owned-spaces" class="spaces-list" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- Rented Spaces Panel -->
+            <div class="profile-tab-panel" id="tab-panel-rented" style="display:none;">
+                <div class="coworker-spaces-section">
+                    <h3>Your booking history</h3>
+
+                    <!-- Report: summary stat tiles -->
+                    <div class="report-summary" id="report-summary"></div>
+
+                    <!-- Report: spending by month chart -->
+                    <div class="report-chart-card">
+                        <div class="report-chart-header">
+                            <h4>Spending by month</h4>
+                        </div>
+                        <div class="report-chart" id="report-chart"></div>
+                    </div>
+
+                    <!-- Report: toolbar (filter, search, view toggle, export) -->
+                    <div class="report-toolbar">
+                        <div class="report-toolbar-left">
+                            <select id="report-filter-period" class="report-select">
+                                <option value="all">All time</option>
+                                <option value="30">Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                                <option value="month">This month</option>
+                                <option value="year">This year</option>
+                                <option value="custom">Custom range...</option>
+                            </select>
+                            <span id="report-period-custom" class="report-period-custom" style="display:none;">
+                                <input type="date" id="report-period-from" class="report-date-input" aria-label="Period start date">
+                                <span class="report-period-sep">to</span>
+                                <input type="date" id="report-period-to" class="report-date-input" aria-label="Period end date">
+                            </span>
+                            <select id="report-filter-location" class="report-select">
+                                <option value="all">All locations</option>
+                            </select>
+                            <select id="report-filter-status" class="report-select">
+                                <option value="all">All statuses</option>
+                                <option value="upcoming">Upcoming</option>
+                                <option value="ongoing">Ongoing</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <input type="search" id="report-search" class="report-search" placeholder="Search by space or location...">
+                            <button type="button" id="report-clear-filters-btn" class="report-clear-btn">Clear filters</button>
+                        </div>
+                        <div class="report-toolbar-right">
+                            <div class="report-view-toggle" role="group" aria-label="Toggle view">
+                                <button type="button" id="view-table-btn" class="report-view-btn active">Table</button>
+                                <button type="button" id="view-cards-btn" class="report-view-btn">Cards</button>
+                            </div>
+                            <button type="button" id="export-csv-btn" class="report-export-btn">Export CSV</button>
+                        </div>
+                    </div>
+
+                    <!-- Report: table view (default) -->
+                    <div class="report-table-wrap" id="report-table-wrap">
+                        <table class="report-table" id="report-table">
+                            <thead>
+                                <tr>
+                                    <th data-sort="title">Space <span class="sort-arrow"></span></th>
+                                    <th data-sort="location">Location <span class="sort-arrow"></span></th>
+                                    <th data-sort="rented_from">Period <span class="sort-arrow"></span></th>
+                                    <th data-sort="duration_days">Duration <span class="sort-arrow"></span></th>
+                                    <th data-sort="status">Status <span class="sort-arrow"></span></th>
+                                    <th data-sort="rent_total">Total <span class="sort-arrow"></span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="rented-spaces-table-body"></tbody>
+                        </table>
+                        <p class="report-empty-state" id="report-empty-state" style="display:none;">No reservations found.</p>
+                    </div>
+
+                    <!-- Card view (hidden by default, toggled via "Cards" button) -->
+                    <div id="rented-spaces" class="spaces-list" style="display:none;"></div>
+                </div>
             </div>
         </div>
 

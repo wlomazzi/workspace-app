@@ -58,6 +58,11 @@ loginForm.addEventListener('submit', async (e) => {
             localStorage.setItem('user_id', data.user.id);
             localStorage.setItem('user_email', data.user.email);
 
+            // One-shot flag read by navbar.js on the very next page load: makes sure the
+            // "rate your past stays" modal pops up right at login, instead of relying on the
+            // looser "first page load in this browser session" heuristic it uses otherwise.
+            sessionStorage.setItem('just_logged_in', 'true');
+
             loginSubmitBtn.textContent = 'Success! Redirecting...';
             window.location.href = 'index.html';
         } else {

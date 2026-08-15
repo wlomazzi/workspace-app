@@ -38,6 +38,40 @@
     align-items: center;
 }
 
+/* Bell icon that appears next to Home whenever the user has a completed stay waiting to be rated */
+.reviews-alert-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: #5c5b5b;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.reviews-alert-icon:hover {
+    color: #222;
+}
+
+.reviews-alert-badge {
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #ff385c;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    box-shadow: 0 0 0 2px #fff;
+}
+
 
 /* Ensure user info is aligned horizontally */
 .user-session-info {

@@ -174,28 +174,82 @@ async function logout() {
 
 // ================================================================================================
 // REVIEWS - "Rate your past stays" modal
-// Runs on every page (navbar.js loads everywhere). Once per browser session, if the logged-in
-// user has reservations whose end_time has already passed and that haven't been reviewed yet,
-// a modal pops up listing them so the user can rate each one (1-5 stars + optional comment).
+// Runs on every page (navbar.js loads everywhere). If the logged-in user has reservations whose
+// end_time has already passed and that haven't been reviewed yet, a modal pops up listing them
+// so the user can rate each one (1-5 stars + optional comment).
+//
+// It always auto-pops right at login (login.js sets a one-shot "just_logged_in" flag right
+// before redirecting to index.html, which this reads and clears below). Outside of that moment
+// it still auto-pops once per browser session, same as before, so a user who never logs out
+// keeps getting reminded occasionally without being nagged on every single page navigation.
+// The bell icon stays visible as a standing reminder either way, and clicking it
+// (handleReviewsAlertClick) opens the same modal on demand at any time.
 // ================================================================================================
 
 async function checkPendingReviews(userId) {
-    // Don't nag on every single page navigation within the same session - only once,
-    // unless the user still has pending reviews next time they log in.
-    if (sessionStorage.getItem('reviews_prompt_shown') === 'true') return;
-
     try {
         const response = await apiFetch('/api/reviews/pending');
         if (!response.ok) return;
 
         const pendingReviews = await response.json();
-        if (!Array.isArray(pendingReviews) || pendingReviews.length === 0) return;
+        if (!Array.isArray(pendingReviews)) return;
+
+        // The bell icon next to Home always reflects whether anything is pending, on every
+        // page load - unlike the modal below, it's not gated by session state.
+        updateReviewsAlertIcon(pendingReviews.length);
+
+        if (pendingReviews.length === 0) return;
+
+        const justLoggedIn = sessionStorage.getItem('just_logged_in') === 'true';
+        if (justLoggedIn) {
+            // Consume the flag so it only forces the popup once, right after this login -
+            // not on every page load for the rest of the session.
+            sessionStorage.removeItem('just_logged_in');
+        } else if (sessionStorage.getItem('reviews_prompt_shown') === 'true') {
+            return;
+        }
 
         sessionStorage.setItem('reviews_prompt_shown', 'true');
         openReviewsModal(pendingReviews);
 
     } catch (error) {
         console.error('Error checking pending reviews:', error);
+    }
+}
+
+
+// Shows/hides the bell icon and keeps its badge count in sync. Safe to call before the
+// navbar has finished inserting into the page (it just no-ops if the elements aren't there yet).
+function updateReviewsAlertIcon(count) {
+    const icon = document.getElementById('reviewsAlertIcon');
+    const badge = document.getElementById('reviewsAlertBadge');
+    if (!icon || !badge) return;
+
+    if (count > 0) {
+        icon.style.display = 'flex';
+        badge.textContent = count > 9 ? '9+' : String(count);
+    } else {
+        icon.style.display = 'none';
+    }
+}
+
+
+// Clicking the bell icon always re-fetches and opens the modal, regardless of whether the
+// once-per-session auto-popup already fired - this is the user asking to see it on demand.
+async function handleReviewsAlertClick() {
+    try {
+        const response = await apiFetch('/api/reviews/pending');
+        if (!response.ok) return;
+
+        const pendingReviews = await response.json();
+        if (!Array.isArray(pendingReviews)) return;
+
+        updateReviewsAlertIcon(pendingReviews.length);
+        if (pendingReviews.length === 0) return;
+
+        openReviewsModal(pendingReviews);
+    } catch (error) {
+        console.error('Error opening pending reviews:', error);
     }
 }
 
@@ -435,9 +489,12 @@ function buildReviewCard(item) {
                 card.style.opacity = '0';
                 setTimeout(() => {
                     card.remove();
-                    // If that was the last card, close the whole modal.
+                    // Keep the bell icon's badge in sync as reviews get submitted, and if that
+                    // was the last card, close the whole modal and hide the icon.
                     const list = document.getElementById('reviewsModalList');
-                    if (list && list.children.length === 0) closeReviewsModal();
+                    const remaining = list ? list.children.length : 0;
+                    updateReviewsAlertIcon(remaining);
+                    if (remaining === 0) closeReviewsModal();
                 }, 250);
             } else {
                 messageEl.textContent = result.error || 'Failed to submit review.';
