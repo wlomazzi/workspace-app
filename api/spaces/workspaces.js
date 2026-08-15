@@ -464,7 +464,33 @@ router.post("/delete", requireAuth, requireCsrf, async (req, res) => {
             return res.status(404).json({ error: 'Workspace not found or does not belong to the user' });
         }
 
-        // Delete the workspace record (associated reservations are removed automatically via ON DELETE CASCADE)
+        // Refuse to permanently delete a space that has ANY reservation history (past or future).
+        // A hard delete cascades (ON DELETE CASCADE) to reservations, their reviews, and now also
+        // messaging conversations for this space - which would silently wipe a renter's booking
+        // history, delete reviews (a way to launder bad ratings), retroactively corrupt the
+        // owner's own revenue report, and - worst case - erase an upcoming, already-paid
+        // reservation with no cancellation or refund flow. Point the owner at deactivating
+        // instead (active=false, see /set_active below): removes it from the public catalog,
+        // keeps every bit of history intact, reversible.
+        const { count: reservationCount, error: reservationCountError } = await req.supabaseAuthed
+            .from('reservations')
+            .select('id', { count: 'exact', head: true })
+            .eq('workspace_id', space_id);
+
+        if (reservationCountError) {
+            console.error('Error checking reservations before delete:', reservationCountError);
+            return res.status(500).json({ error: 'Failed to check reservation history for this workspace' });
+        }
+
+        if (reservationCount > 0) {
+            return res.status(409).json({
+                error: 'This space has reservation history and can\'t be permanently deleted. Deactivate it instead to remove it from the public catalog while keeping its history.',
+                hasReservations: true,
+            });
+        }
+
+        // Delete the workspace record (only reached when there are zero reservations, so the
+        // ON DELETE CASCADE below has nothing meaningful to touch beyond the empty relations)
         const { error } = await req.supabaseAuthed
             .from('workspaces')
             .delete()
@@ -476,6 +502,58 @@ router.post("/delete", requireAuth, requireCsrf, async (req, res) => {
         }
 
         return res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.error('Server error:', error);
+        return res.status(500).json({ error: 'An unexpected error occurred' });
+    }
+});
+
+
+
+// Route to activate/deactivate a workspace owned by the user - the safe alternative to /delete
+// when the space has reservation history (see the check above), and also the toggle used directly
+// from the report table/card list (the icon next to delete) so an owner can turn a space back on
+// later. Sets only the `active` column: true puts it back in the public catalog (GET "/" filters
+// .eq('active', true) when no id is given), false removes it - either way, reservations, reviews
+// and message conversations are untouched. Deliberately a narrow, single-field update (unlike
+// /update, which requires the full listing form) so this can be called straight from the list or
+// from the delete-blocked modal without needing to load the entire edit form first.
+router.post("/set_active", requireAuth, requireCsrf, async (req, res) => {
+    const { space_id, active } = req.body;
+    const user_id = req.userId;
+
+    if (!space_id) {
+        return res.status(400).json({ error: 'space_id is required' });
+    }
+
+    if (typeof active !== 'boolean') {
+        return res.status(400).json({ error: 'active (boolean) is required' });
+    }
+
+    try {
+        const { data: workspace, error: workspaceError } = await req.supabaseAuthed
+            .from('workspaces')
+            .select('id')
+            .eq('id', space_id)
+            .eq('user_id', user_id)
+            .single();
+
+        if (workspaceError || !workspace) {
+            return res.status(404).json({ error: 'Workspace not found or does not belong to the user' });
+        }
+
+        const { error } = await req.supabaseAuthed
+            .from('workspaces')
+            .update({ active })
+            .eq('id', space_id);
+
+        if (error) {
+            console.error('Error updating workspace active status:', error);
+            return res.status(500).json({ error: `Failed to ${active ? 'activate' : 'deactivate'} workspace` });
+        }
+
+        return res.status(200).json({ success: true, active });
 
     } catch (error) {
         console.error('Server error:', error);

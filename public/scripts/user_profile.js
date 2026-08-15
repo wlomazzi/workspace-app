@@ -617,6 +617,7 @@ async function buildOwnedSpacesReport(rawWorkspaces) {
             price: Number(workspace.price) || 0,
             lease_time: workspace.lease_time,
             type: workspace.type,
+            active: workspace.active !== false, // missing/null treated as active (matches DB default)
             bookings,
             revenue,
             nextBooking: nextUpcoming ? nextUpcoming.start_time : null
@@ -698,6 +699,35 @@ function getFilteredSortedOwnedSpaces() {
     return filtered;
 }
 
+// Activates or deactivates a workspace directly from the list (table row or card icon), without
+// going through the delete modal. Reversible either direction, so no confirmation prompt - just an
+// optimistic disable-while-in-flight and a reload on success to refresh bookings/active state.
+async function handleToggleActive(spaceId, isCurrentlyActive, buttonEl) {
+    const nextActive = !isCurrentlyActive;
+    if (buttonEl) buttonEl.disabled = true;
+
+    try {
+        const response = await apiFetch('/api/spaces/workspaces/set_active', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ space_id: spaceId, active: nextActive })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            window.location.reload();
+        } else {
+            alert(`Failed to ${nextActive ? "activate" : "deactivate"} workspace: ` + (result.error || "Unknown error"));
+            if (buttonEl) buttonEl.disabled = false;
+        }
+    } catch (error) {
+        console.error("Error updating workspace active status:", error);
+        alert("An error occurred while updating the workspace status.");
+        if (buttonEl) buttonEl.disabled = false;
+    }
+}
+
 function renderOwnedTable(spaces) {
     const tbody = document.getElementById("owned-spaces-table-body");
     const table = document.getElementById("owned-report-table");
@@ -716,13 +746,17 @@ function renderOwnedTable(spaces) {
     emptyState.style.display = "none";
 
     spaces.forEach(space => {
+        const hasReservations = space.bookings > 0;
+        const isActive = space.active !== false;
+
         const tr = document.createElement("tr");
-        tr.className = "report-table-row";
+        tr.className = "report-table-row" + (isActive ? "" : " report-table-row-inactive");
         tr.innerHTML = `
             <td>
                 <div class="report-table-space">
                     <img src="${space.image}" alt="${space.title}">
                     <span>${space.title}</span>
+                    ${isActive ? "" : '<span class="status-badge status-inactive"><span class="status-dot"></span>Inactive</span>'}
                 </div>
             </td>
             <td>${space.location}</td>
@@ -733,7 +767,13 @@ function renderOwnedTable(spaces) {
             <td>
                 <div class="report-table-actions">
                     <button type="button" class="report-row-action-btn" data-action="reservations">View reservations</button>
-                    <button type="button" class="report-row-delete-btn" data-action="delete" title="Delete workspace" aria-label="Delete workspace">
+                    <button type="button" class="report-row-toggle-btn${isActive ? "" : " is-inactive"}" data-action="toggle-active" title="${isActive ? "Deactivate workspace" : "Activate workspace"}" aria-label="${isActive ? "Deactivate workspace" : "Activate workspace"}">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                            <line x1="12" y1="2" x2="12" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button type="button" class="report-row-delete-btn" data-action="delete" title="${hasReservations ? "Can't delete: this space has reservations - deactivate it instead" : "Delete workspace"}" aria-label="Delete workspace" ${hasReservations ? "disabled" : ""}>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18"></path>
                             <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -750,8 +790,14 @@ function renderOwnedTable(spaces) {
             event.stopPropagation();
             window.location.href = `space_reservations.html?space_id=${space.id}`;
         });
-        tr.querySelector('[data-action="delete"]').addEventListener("click", (event) => {
+        tr.querySelector('[data-action="toggle-active"]').addEventListener("click", (event) => {
             event.stopPropagation();
+            handleToggleActive(space.id, isActive, event.currentTarget);
+        });
+        const deleteBtn = tr.querySelector('[data-action="delete"]');
+        deleteBtn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (deleteBtn.disabled) return;
             openDeleteModal(space.id, space.title);
         });
         tr.addEventListener("click", () => {
@@ -783,10 +829,20 @@ function populateSpacesOwned(containerId, spaces) {
     }
 
     spaces.forEach(space => {
+        const hasReservations = space.bookings > 0;
+        const isActive = space.active !== false;
+
         const wrapper = document.createElement("div");
         wrapper.classList.add("space-card-wrapper");
+        if (!isActive) wrapper.classList.add("space-card-wrapper-inactive");
         wrapper.innerHTML = `
-            <button type="button" class="space-delete-btn" title="Delete workspace" aria-label="Delete workspace">
+            <button type="button" class="space-toggle-btn${isActive ? "" : " is-inactive"}" title="${isActive ? "Deactivate workspace" : "Activate workspace"}" aria-label="${isActive ? "Deactivate workspace" : "Activate workspace"}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                    <line x1="12" y1="2" x2="12" y2="12"></line>
+                </svg>
+            </button>
+            <button type="button" class="space-delete-btn" title="${hasReservations ? "Can't delete: this space has reservations - deactivate it instead" : "Delete workspace"}" aria-label="Delete workspace" ${hasReservations ? "disabled" : ""}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 6h18"></path>
                     <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -798,6 +854,7 @@ function populateSpacesOwned(containerId, spaces) {
             <div class="space-card">
                 <img src="${space.image}" alt="${space.title}">
                 <h4>${space.title}</h4>
+                ${isActive ? "" : '<span class="status-badge status-inactive"><span class="status-dot"></span>Inactive</span>'}
                 <p>${space.location}</p>
                 <p><strong>${formatCurrency(space.price)} / ${space.lease_time}</strong></p>
                 <p class="report-card-meta">${space.bookings} booking${space.bookings === 1 ? "" : "s"} &middot; ${formatCurrency(space.revenue)} earned</p>
@@ -806,8 +863,14 @@ function populateSpacesOwned(containerId, spaces) {
         `;
 
         // Wire up events with real listeners (avoids HTML-escaping issues with inline onclick strings)
-        wrapper.querySelector(".space-delete-btn").addEventListener("click", function (event) {
+        wrapper.querySelector(".space-toggle-btn").addEventListener("click", function (event) {
             event.stopPropagation();
+            handleToggleActive(space.id, isActive, this);
+        });
+        const cardDeleteBtn = wrapper.querySelector(".space-delete-btn");
+        cardDeleteBtn.addEventListener("click", function (event) {
+            event.stopPropagation();
+            if (cardDeleteBtn.disabled) return;
             openDeleteModal(space.id, space.title);
         });
         wrapper.querySelector(".space-reservations-btn").addEventListener("click", function (event) {
@@ -1050,11 +1113,50 @@ function openSpaceDetails(spaceId) {
 }
 
 // DELETE WORKSPACE - Custom confirmation modal ---------------------------------------------------------------------
+// Two states: the normal "permanently delete?" confirmation, and a "blocked" state the confirm
+// handler switches into when the backend refuses (409, hasReservations: true) because the space
+// has reservation history - steers the owner toward deactivating instead (keeps history,
+// reversible) rather than just showing an alert() and leaving them stuck.
 let pendingDeleteSpaceId = null;
+
+const DELETE_MODAL_CONFIRM_BTN_DEFAULT_HTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+        <path d="M10 11v6"></path>
+        <path d="M14 11v6"></path>
+    </svg>
+    Delete`;
+
+function resetDeleteModalToDefault(spaceTitle) {
+    document.getElementById("deleteModalTitle").textContent = "Delete this workspace?";
+    document.getElementById("deleteModalText").innerHTML =
+        `You're about to permanently delete <strong id="deleteModalSpaceName">${spaceTitle || "this workspace"}</strong>. This will also remove any reservations linked to it. This action cannot be undone.`;
+
+    const confirmBtn = document.getElementById("deleteModalConfirm");
+    confirmBtn.style.display = "inline-flex";
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = DELETE_MODAL_CONFIRM_BTN_DEFAULT_HTML;
+
+    const deactivateBtn = document.getElementById("deleteModalDeactivate");
+    deactivateBtn.style.display = "none";
+    deactivateBtn.disabled = false;
+    deactivateBtn.textContent = "Deactivate instead";
+}
+
+function showDeleteModalBlockedByReservations() {
+    document.getElementById("deleteModalTitle").textContent = "Can't delete — this space has history";
+    document.getElementById("deleteModalText").textContent =
+        "This space has reservation history, so deleting it would also erase past bookings, reviews and messages tied to it (and could silently cancel an upcoming reservation). Deactivate it instead: it disappears from the public catalog immediately, but everything is kept and you can turn it back on later.";
+
+    document.getElementById("deleteModalConfirm").style.display = "none";
+    document.getElementById("deleteModalDeactivate").style.display = "inline-flex";
+}
 
 function openDeleteModal(spaceId, spaceTitle) {
     pendingDeleteSpaceId = spaceId;
-    document.getElementById("deleteModalSpaceName").textContent = spaceTitle || "this workspace";
+    resetDeleteModalToDefault(spaceTitle);
     document.getElementById("deleteModal").classList.add("open");
 }
 
@@ -1067,8 +1169,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("deleteModal");
     const cancelBtn = document.getElementById("deleteModalCancel");
     const confirmBtn = document.getElementById("deleteModalConfirm");
+    const deactivateBtn = document.getElementById("deleteModalDeactivate");
 
-    if (!modal || !cancelBtn || !confirmBtn) return;
+    if (!modal || !cancelBtn || !confirmBtn || !deactivateBtn) return;
 
     // Cancel button closes the modal without deleting anything
     cancelBtn.addEventListener("click", closeDeleteModal);
@@ -1099,23 +1202,55 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok && result.success) {
                 closeDeleteModal();
                 window.location.reload();
+            } else if (response.status === 409 && result.hasReservations) {
+                // Blocked by design (see api/spaces/workspaces.js) - offer deactivation instead
+                // of just an alert() dead end.
+                showDeleteModalBlockedByReservations();
             } else {
                 alert("Failed to delete workspace: " + (result.error || "Unknown error"));
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = DELETE_MODAL_CONFIRM_BTN_DEFAULT_HTML;
             }
         } catch (error) {
             console.error("Error deleting workspace:", error);
             alert("An error occurred while deleting the workspace.");
-        } finally {
             confirmBtn.disabled = false;
-            confirmBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 6h18"></path>
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                </svg>
-                Delete`;
+            confirmBtn.innerHTML = DELETE_MODAL_CONFIRM_BTN_DEFAULT_HTML;
+        }
+    });
+
+    // Deactivate button (only visible after a blocked delete attempt) - sets active=false,
+    // keeping the space's full reservation/review/message history intact.
+    deactivateBtn.addEventListener("click", async function () {
+        if (!pendingDeleteSpaceId) return;
+
+        const spaceId = pendingDeleteSpaceId;
+
+        deactivateBtn.disabled = true;
+        deactivateBtn.textContent = "Deactivating...";
+
+        try {
+            const response = await apiFetch('/api/spaces/workspaces/set_active', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ space_id: spaceId, active: false })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                closeDeleteModal();
+                window.location.reload();
+            } else {
+                alert("Failed to deactivate workspace: " + (result.error || "Unknown error"));
+                deactivateBtn.disabled = false;
+                deactivateBtn.textContent = "Deactivate instead";
+            }
+        } catch (error) {
+            console.error("Error deactivating workspace:", error);
+            alert("An error occurred while deactivating the workspace.");
+            deactivateBtn.disabled = false;
+            deactivateBtn.textContent = "Deactivate instead";
         }
     });
 });

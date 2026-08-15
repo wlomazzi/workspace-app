@@ -209,6 +209,68 @@ body {
     height: 16px;
 }
 
+.space-delete-btn:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.space-delete-btn:disabled:hover {
+    background: #ffffffe6;
+    color: #ccc;
+    transform: none;
+}
+
+/* Activate/deactivate toggle icon (card view) - sits just left of the delete icon. Blue by default
+   ("click to deactivate"), green when the space is already inactive ("click to activate"). */
+.space-toggle-btn {
+    position: absolute;
+    top: 10px;
+    right: 52px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffffe6;
+    border: none;
+    border-radius: 50%;
+    color: #6b6b6b;
+    cursor: pointer;
+    box-shadow: 0px 2px 6px #00000026;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    z-index: 2;
+}
+
+.space-toggle-btn:hover {
+    background: #007bff;
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.space-toggle-btn.is-inactive {
+    color: #0ca30c;
+}
+
+.space-toggle-btn.is-inactive:hover {
+    background: #0ca30c;
+    color: #fff;
+}
+
+.space-toggle-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Deactivated workspace card - grayed out image, everything else still fully legible ----------------- */
+.space-card-wrapper-inactive .space-card img {
+    filter: grayscale(70%);
+    opacity: 0.7;
+}
+
+.space-card-wrapper-inactive .space-card {
+    background: #fafaf9;
+}
+
 /* Delete confirmation modal ----------------------------------------------------------------------------------------*/
 .delete-modal {
     display: none;
@@ -307,6 +369,20 @@ body {
 }
 
 .delete-modal-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.delete-modal-deactivate {
+    background: #007bff;
+    color: #fff;
+}
+
+.delete-modal-deactivate:hover {
+    background: #0056b3;
+}
+
+.delete-modal-deactivate:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -715,6 +791,96 @@ body {
 .report-row-delete-btn svg {
     width: 14px;
     height: 14px;
+}
+
+.report-row-delete-btn:disabled {
+    color: #d6d6d6;
+    border-color: var(--report-gridline);
+    background: #fafafa;
+    cursor: not-allowed;
+}
+
+.report-row-delete-btn:disabled:hover {
+    background: #fafafa;
+    color: #d6d6d6;
+    border-color: var(--report-gridline);
+}
+
+/* Activate/deactivate toggle icon (table row) - same shape as the delete icon, blue by default
+   ("click to deactivate"), switches to green when the space is already inactive ("click to
+   activate") so the two states read as distinct actions rather than just a recolored delete. */
+.report-row-toggle-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid var(--report-gridline);
+    border-radius: 50%;
+    color: #6b6b6b;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.report-row-toggle-btn:hover {
+    background: #eaf3ff;
+    color: #007bff;
+    border-color: #cfe3ff;
+}
+
+.report-row-toggle-btn.is-inactive {
+    color: #0ca30c;
+    border-color: #cdeecd;
+    background: #f2fbf2;
+}
+
+.report-row-toggle-btn.is-inactive:hover {
+    background: #e6f6e6;
+    color: #0ca30c;
+    border-color: #0ca30c;
+}
+
+.report-row-toggle-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.report-row-toggle-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Deactivated workspace - grayed out row, still fully legible/clickable ------------------------------ */
+tr.report-table-row-inactive {
+    background: #fafaf9;
+}
+
+tr.report-table-row-inactive:hover {
+    background: #f2f2f0;
+}
+
+tr.report-table-row-inactive td {
+    color: var(--report-text-muted);
+}
+
+tr.report-table-row-inactive .report-table-value {
+    color: var(--report-text-muted);
+}
+
+.report-table-row-inactive .report-table-space img {
+    filter: grayscale(70%);
+    opacity: 0.7;
+}
+
+.status-inactive {
+    background: #eeeeec;
+    color: var(--report-text-muted);
+}
+
+.status-inactive .status-dot {
+    background: var(--report-text-muted);
 }
 
 /* Extra meta line ("3 bookings · C$150 earned") shown on owned-space cards -------------------------- */

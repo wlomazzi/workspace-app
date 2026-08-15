@@ -189,8 +189,8 @@
                         <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path>
                     </svg>
                 </div>
-                <h3>Delete this workspace?</h3>
-                <p>You're about to permanently delete <strong id="deleteModalSpaceName"></strong>. This will also remove any reservations linked to it. This action cannot be undone.</p>
+                <h3 id="deleteModalTitle">Delete this workspace?</h3>
+                <p id="deleteModalText">You're about to permanently delete <strong id="deleteModalSpaceName"></strong>. This will also remove any reservations linked to it. This action cannot be undone.</p>
                 <div class="delete-modal-buttons">
                     <button id="deleteModalCancel" class="delete-modal-btn delete-modal-cancel">Cancel</button>
                     <button id="deleteModalConfirm" class="delete-modal-btn delete-modal-confirm">
@@ -203,6 +203,11 @@
                         </svg>
                         Delete
                     </button>
+                    <!-- Hidden by default - swapped in when /delete comes back 409 hasReservations
+                         (see user_profile.js): this space has booking history, so we steer the
+                         owner toward deactivating (keeps history, reversible) instead of a hard
+                         delete. -->
+                    <button id="deleteModalDeactivate" class="delete-modal-btn delete-modal-deactivate" style="display:none;">Deactivate instead</button>
                 </div>
             </div>
         </div>
