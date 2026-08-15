@@ -82,6 +82,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Check for reservations that already ended and haven't been rated yet.
                     checkPendingReviews(userId);
 
+                    // Check for unread messages (renter <-> owner chat) and keep the badge live.
+                    checkUnreadMessages(userId);
+
                 } catch (error) {
                     console.error('Error in request:', error);
                 }
@@ -109,6 +112,12 @@ document.addEventListener("DOMContentLoaded", function () {
 // Top menu: When clicking on the Home link, redirect to the home page
 function menuHomeRedirect() {
     window.location.href = "index.html"; // Redirects to the homepage
+}
+
+
+// Top menu: clicking the chat icon opens the messages inbox
+function menuMessagesRedirect() {
+    window.location.href = "messages.html";
 }
 
 
@@ -250,6 +259,58 @@ async function handleReviewsAlertClick() {
         openReviewsModal(pendingReviews);
     } catch (error) {
         console.error('Error opening pending reviews:', error);
+    }
+}
+
+
+
+// ================================================================================================
+// MESSAGES - unread badge on the chat icon (section 7/8 of the request)
+// Runs on every page, same as the reviews bell. Shows the current unread count immediately on
+// load, then keeps it live via Realtime for the rest of the session - a new/updated message
+// anywhere the user is a participant (messages_select_participant RLS in migration_messages.sql
+// already restricts this to only their own conversations) just triggers a fresh count fetch,
+// which is simpler and less bug-prone than hand-tracking increments/decrements here.
+// ================================================================================================
+
+async function checkUnreadMessages(userId) {
+    try {
+        await refreshUnreadMessagesBadge();
+
+        const { subscribeToMessages } = await import('/scripts/realtime.js');
+        subscribeToMessages('navbar-badge', {
+            onInsert: () => refreshUnreadMessagesBadge(),
+            onUpdate: () => refreshUnreadMessagesBadge(),
+        });
+    } catch (error) {
+        console.error('Error checking unread messages:', error);
+    }
+}
+
+async function refreshUnreadMessagesBadge() {
+    try {
+        const response = await apiFetch('/api/messages/unread_count');
+        if (!response.ok) return;
+
+        const { count } = await response.json();
+        updateMessagesAlertIcon(count);
+    } catch (error) {
+        console.error('Error refreshing unread messages badge:', error);
+    }
+}
+
+// Shows/hides the chat icon and keeps its badge count in sync. Safe to call before the navbar
+// has finished inserting into the page (it just no-ops if the elements aren't there yet).
+function updateMessagesAlertIcon(count) {
+    const icon = document.getElementById('messagesAlertIcon');
+    const badge = document.getElementById('messagesAlertBadge');
+    if (!icon || !badge) return;
+
+    if (count > 0) {
+        icon.style.display = 'flex';
+        badge.textContent = count > 9 ? '9+' : String(count);
+    } else {
+        icon.style.display = 'none';
     }
 }
 

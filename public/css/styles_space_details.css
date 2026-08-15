@@ -343,4 +343,64 @@
       margin: 30px auto;
     }
   }
+
+/* "Hosted by" / message-the-owner block (section 6/16 of the messaging spec) */
+.host-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+    padding: 14px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+.host-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.host-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.host-label {
+    margin: 0;
+    font-size: 12px;
+    color: #777;
+}
+
+.host-name {
+    margin: 2px 0 0;
+    font-weight: 700;
+    font-size: 14px;
+    color: #222;
+}
+
+.message-owner-btn {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #007bff;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.message-owner-btn:hover:not(:disabled) { background: #0056b3; }
+.message-owner-btn:disabled { background: #a9c6e8; cursor: not-allowed; }
+
+.host-error {
+    margin-top: 8px;
+    color: #b3261e;
+    font-size: 13px;
+}
   

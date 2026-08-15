@@ -1,10 +1,11 @@
 # Recreating the Supabase project — workspace-app
 
 The schema is reconstructed from the application code (`schema.sql`,
-`migration_hour_booking.sql`, `migration_security_hardening.sql` in the
-project root — these are SQL scripts you paste into the Supabase SQL Editor,
-they aren't run automatically). Old data (users, workspaces, reservations,
-images) is **not recoverable** this way — this only recreates the structure.
+`migration_hour_booking.sql`, `migration_security_hardening.sql`,
+`migration_messages.sql` in the project root — these are SQL scripts you
+paste into the Supabase SQL Editor, they aren't run automatically). Old data
+(users, workspaces, reservations, images) is **not recoverable** this way —
+this only recreates the structure.
 
 ## 1. Create the project
 
@@ -32,7 +33,13 @@ images) is **not recoverable** this way — this only recreates the structure.
    `get_all_reservation_slots()` function used by the public booking
    calendar. **Without running this script, `space_details.html` breaks**
    (the function doesn't exist).
-4. Check **Settings → Integrations → Data API** to confirm the new tables are
+4. Paste the contents of `migration_messages.sql` → **Run**.
+   Adds the renter↔owner messaging system (`conversations`,
+   `conversation_participants`, `messages`, RLS policies, and the
+   `create_or_get_conversation()` / `get_unread_message_count()` functions).
+   Depends on `workspaces` and `reservations` existing, so it must run after
+   the three scripts above.
+5. Check **Settings → Integrations → Data API** to confirm the new tables are
    exposed to the API (on new projects this is usually enabled by default via
    "Default privileges for new entities" — but worth double-checking, or
    `supabase-js` calls will return a 404/permission error).
@@ -45,10 +52,24 @@ in the frontend).
 
 - Authentication → Providers → Email → uncheck **Confirm email**
   (otherwise login fails until the user manually confirms their email).
-- Authentication → URL Configuration → **Redirect URLs** → add
-  `http://localhost:3000/reset_password.html` (and the equivalent production
-  URL, e.g. `https://workspace-ap.vercel.app/reset_password.html`) — without
-  this, the "forgot password" link doesn't work.
+- Authentication → URL Configuration → **Redirect URLs** → add BOTH of these
+  (this is one shared Supabase project used by local dev and production, so
+  both need to be listed together, not one or the other):
+  - `http://localhost:3000/reset_password.html`
+  - `https://workspace-ap.vercel.app/reset_password.html`
+
+  Without this, `resetPasswordForEmail`'s `redirectTo` (set dynamically in
+  `forgot_password.js` from `window.location.origin`, so it's already correct
+  for whichever environment sent the request) gets silently ignored by
+  Supabase, and the reset link falls back to landing on **Site URL** instead
+  (root `/`, with the token stuck in the URL fragment) - if that's what's
+  happening, this is the fix, not a code change.
+  - Optional but more convenient long-term: use wildcards instead
+    (`http://localhost:3000/**` and `https://workspace-ap.vercel.app/**`) so
+    new pages never need to be re-added here individually.
+  - Also check **Site URL** on this same screen - it's the fallback target
+    described above, so it's worth pointing it at whichever of the two
+    environments you consider the "main" one.
 
 ## 4. Check Storage
 
@@ -88,6 +109,10 @@ Test in this order (each step depends on the previous one):
 10. As the workspace owner, open the reservations report for one of your
     spaces (`space_reservations.html`) and confirm it shows the booking made
     in step 8
+11. On `space_details.html`, click "Falar com o proprietário" as the renter,
+    send a message, then log in as the owner and confirm it shows up in
+    Mensagens with a badge on the navbar icon; reply and confirm the renter
+    sees the reply without refreshing (Realtime)
 
 ## Security notes
 

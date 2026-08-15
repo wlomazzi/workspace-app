@@ -6,6 +6,7 @@ dotenv.config();  // Load environment variables from the .env file
 import workspacesRouter from './api/spaces/workspaces.js';  // Importing the workspaces router
 import loginRouter from './api/users/user_login.js';  // Importing the login router
 import reviewsRouter from './api/reviews/reviews.js';  // Importing the reviews router
+import messagesRouter from './api/messages/messages.js';  // Importing the messages router
 
 
 import express from 'express';
@@ -29,6 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/spaces/workspaces', workspacesRouter);
 app.use('/api/users/user_login', loginRouter);  // Mounting the routes from login.js at the path '/api/users/login'
 app.use('/api/reviews', reviewsRouter);  // Mounting the routes from reviews.js at the path '/api/reviews'
+app.use('/api/messages', messagesRouter);  // Mounting the routes from messages.js at the path '/api/messages'
 //app.use('/api/users/user_login/logout', loginRouter);  // Mounting the routes from login.js at the path '/api/users/login/logout'
 //app.use('/api/users/user_login/session', loginRouter);  // Mounting the routes from login.js at the path '/api/users/login/logout'
 

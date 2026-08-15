@@ -72,6 +72,41 @@
     box-shadow: 0 0 0 2px #fff;
 }
 
+/* Chat icon that appears next to the bell whenever the user has unread messages - same visual
+   pattern as .reviews-alert-icon on purpose, so the two read as one family of nav icons. */
+.messages-alert-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: #5c5b5b;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.messages-alert-icon:hover {
+    color: #222;
+}
+
+.messages-alert-badge {
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #007bff;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    box-shadow: 0 0 0 2px #fff;
+}
+
 
 /* Ensure user info is aligned horizontally */
 .user-session-info {

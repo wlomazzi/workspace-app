@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+    <link rel="stylesheet" href="/components/navbar.css">
+    <link rel="stylesheet" href="/components/footer.css">
+    <link rel="stylesheet" href="/css/styles_messages.css">
+    <script defer src="/scripts/auth-fetch.js"></script>
+    <script defer src="/components/navbar.js"></script>
+    <script defer src="/components/footer.js"></script>
+    <!-- Supabase JS, loaded directly (not through the Express backend) purely so this page can
+         open an authenticated Realtime websocket - see public/scripts/realtime.js for the full
+         reasoning (same pattern already used on reset_password.html for a different flow). -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer type="module" src="/scripts/messages.js"></script>
+</head>
+<body>
+
+    <main class="messages-page" id="messagesPage">
+
+        <!-- Left pane: conversation list. Always visible on desktop; on mobile, hidden as soon as
+             a conversation is opened (see .messages-page.thread-open in styles_messages.css). -->
+        <section class="conversations-pane" id="conversationsPane">
+            <div class="conversations-pane-header">
+                <h1>Messages</h1>
+            </div>
+
+            <div class="conversations-list" id="conversationsList"></div>
+
+            <div class="conversations-state conversations-loading" id="conversationsLoading">
+                <div class="conversation-skeleton"></div>
+                <div class="conversation-skeleton"></div>
+                <div class="conversation-skeleton"></div>
+            </div>
+
+            <div class="conversations-state conversations-empty" id="conversationsEmpty" style="display:none;">
+                <p>You don't have any messages yet.</p>
+                <p class="conversations-state-sub">When you reach out to an owner about a space, or receive a message, your conversations will show up here.</p>
+            </div>
+
+            <div class="conversations-state conversations-error" id="conversationsError" style="display:none;">
+                <p>Something went wrong loading your messages.</p>
+                <button type="button" class="messages-retry-btn" id="conversationsRetryBtn">Try again</button>
+            </div>
+        </section>
+
+        <!-- Right pane: the open conversation. Full-screen on mobile once a conversation is open. -->
+        <section class="thread-pane" id="threadPane">
+
+            <div class="thread-placeholder" id="threadPlaceholder">
+                <p>Select a conversation to start chatting.</p>
+            </div>
+
+            <div class="thread-content" id="threadContent" style="display:none;">
+
+                <div class="thread-header">
+                    <button type="button" class="thread-back-btn" id="threadBackBtn" aria-label="Back to conversations">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <img class="thread-header-space-img" id="threadSpaceImg" alt="">
+                    <div class="thread-header-info">
+                        <div class="thread-header-space-title" id="threadSpaceTitle"></div>
+                        <div class="thread-header-person" id="threadPersonName"></div>
+                    </div>
+                </div>
+
+                <div class="thread-booking-banner" id="threadBookingBanner" style="display:none;"></div>
+
+                <div class="thread-messages" id="threadMessages">
+                    <button type="button" class="thread-load-more-btn" id="threadLoadMoreBtn" style="display:none;">Load earlier messages</button>
+                    <div class="thread-messages-list" id="threadMessagesList"></div>
+                </div>
+
+                <p class="thread-error" id="threadError" style="display:none;"></p>
+
+                <form class="thread-composer" id="threadComposer">
+                    <textarea id="threadComposerInput" class="thread-composer-input" placeholder="Type a message..." maxlength="4000" required rows="1"></textarea>
+                    <button type="submit" class="thread-composer-send-btn" id="threadSendBtn">Send</button>
+                </form>
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+</html>

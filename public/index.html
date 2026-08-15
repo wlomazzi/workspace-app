@@ -8,6 +8,10 @@
     <link rel="stylesheet" href= "/components/footer.css">
     <link rel="stylesheet" href= "/css/styles_default.css" >
     <script defer src="/scripts/auth-fetch.js"></script>
+    <!-- Lets the navbar's unread-messages badge update live via Supabase Realtime on the app's
+         main landing page, instead of only refreshing on the next full page load - see
+         public/scripts/realtime.js for why this needs to be loaded per-page. -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script defer src="/components/navbar.js"></script>
     <script defer src="/components/footer.js"></script>
     <script defer src="/scripts/default.js"></script>

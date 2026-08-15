@@ -1,9 +1,28 @@
+// Pages that need the user to log in first (e.g. "Message the owner" on space_details.html when
+// logged out) link here with ?redirect=<page> so login lands back where the user actually wanted
+// to go instead of always index.html. Only a plain relative "somepage.html" (optionally with its
+// own query string) is accepted - anything else (an absolute URL, a protocol-relative "//host/...",
+// etc.) falls back to index.html, so this can't be turned into an open redirect.
+function getSafeRedirectTarget() {
+    const raw = new URLSearchParams(window.location.search).get('redirect');
+    if (!raw) return 'index.html';
+
+    let decoded;
+    try {
+        decoded = decodeURIComponent(raw);
+    } catch {
+        return 'index.html';
+    }
+
+    return /^[a-zA-Z0-9_-]+\.html(\?[^\s]*)?$/.test(decoded) ? decoded : 'index.html';
+}
+
 // If the user already has a valid session, skip the login page entirely. The session itself now
 // lives in an httpOnly cookie the page can't read directly, so this has to ask the server.
 // No blocking alert here - a silent redirect is the expected behavior for "already logged in".
 checkSession().then(result => {
     if (result.loggedIn) {
-        window.location.href = 'index.html';
+        window.location.href = getSafeRedirectTarget();
     }
 });
 
@@ -64,7 +83,7 @@ loginForm.addEventListener('submit', async (e) => {
             sessionStorage.setItem('just_logged_in', 'true');
 
             loginSubmitBtn.textContent = 'Success! Redirecting...';
-            window.location.href = 'index.html';
+            window.location.href = getSafeRedirectTarget();
         } else {
             showLoginError(data.error || 'Login failed. Please check your credentials and try again.');
             loginSubmitBtn.disabled = false;

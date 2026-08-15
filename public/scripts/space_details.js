@@ -100,6 +100,18 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("space-type").textContent  = spaceType;
     document.getElementById("space-rating").innerHTML  = `${getStars(spaceData.rating)} (${spaceData.rating})`;
 
+    // "Hosted by" + message-the-owner button (section 6/16 of the messaging feature). Hidden
+    // entirely if you're viewing your own space - messaging yourself isn't a real flow (the
+    // backend rejects it too, see create_or_get_conversation() in migration_messages.sql).
+    setupHostSection(spaceData, spaceId);
+
+    // Coming back here right after logging in from the "Message the owner" button (see
+    // handleMessageOwnerClick's redirect-to-login below) - finish the flow automatically instead
+    // of making the user click the button a second time.
+    if (urlParams.get('action') === 'message_owner' && localStorage.getItem('user_id')) {
+        handleMessageOwnerClick(spaceId);
+    }
+
     // Store the lease type and price for later use in the calendar
     calendarLeaseType = spaceData.lease_time;
     calendarPrice = parseFloat(spaceData.price);
@@ -226,6 +238,73 @@ function getStars(rating) {
 }
 // END Shows the stars based on the rating. This function generates a string of stars based on the rating value -------------------------------------------------------------
 
+
+// "Hosted by <name>" block + "Message the owner" button (messaging feature, section 6/16). The
+// owner's public display info is already attached server-side to spaceData.owner (see
+// GET /api/spaces/workspaces in api/spaces/workspaces.js) so no extra request is needed here.
+function setupHostSection(spaceData, spaceId) {
+    const hostSection = document.getElementById("hostSection");
+    const currentUserId = localStorage.getItem('user_id');
+
+    // Don't show "message the owner" on your own listing - there's nobody else to talk to, and
+    // the backend rejects it anyway (create_or_get_conversation raises "Cannot message yourself").
+    if (currentUserId && currentUserId === spaceData.user_id) {
+        return;
+    }
+
+    document.getElementById("hostName").textContent = spaceData.owner?.full_name || "Space owner";
+    if (spaceData.owner?.avatar_url) {
+        document.getElementById("hostAvatar").src = spaceData.owner.avatar_url;
+    }
+    hostSection.style.display = "flex";
+
+    document.getElementById("messageOwnerBtn").addEventListener("click", () => handleMessageOwnerClick(spaceId));
+}
+
+async function handleMessageOwnerClick(spaceId) {
+    const btn = document.getElementById("messageOwnerBtn");
+    const errorEl = document.getElementById("messageOwnerError");
+    errorEl.hidden = true;
+
+    // Not logged in: hand off to the existing login flow, then come straight back here and
+    // re-run this same click once signed in (section 16: "retornar para o espaço e continuar o
+    // fluxo"). See login.js for the matching redirect-back logic.
+    if (!localStorage.getItem('user_id')) {
+        const returnTo = encodeURIComponent(`space_details.html?id=${spaceId}&action=message_owner`);
+        window.location.href = `login.html?redirect=${returnTo}`;
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Opening chat...";
+
+    try {
+        const response = await apiFetch('/api/messages/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ space_id: Number(spaceId) }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            errorEl.textContent = data.error || 'Could not start the conversation. Please try again.';
+            errorEl.hidden = false;
+            btn.disabled = false;
+            btn.textContent = "Message the owner";
+            return;
+        }
+
+        window.location.href = `messages.html?conversation_id=${data.conversation_id}`;
+
+    } catch (error) {
+        console.error('Error starting conversation with the owner:', error);
+        errorEl.textContent = 'Could not start the conversation. Please try again.';
+        errorEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = "Message the owner";
+    }
+}
 
 
 

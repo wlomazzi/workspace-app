@@ -41,6 +41,24 @@ router.get("/", async (req, res) => {
             return res.status(500).json({ error: error.message });
         }
 
+        // When fetching a single space by id, also attach its owner's public display info
+        // (full_name/avatar_url - profiles are public-readable, see schema.sql) - space_details.js
+        // uses this to show "Owner: <name>" and to power the "Message the owner" button, without
+        // needing a second request.
+        if (id && data && data.length > 0) {
+            const ownerIds = [...new Set(data.map(space => space.user_id))];
+            const { data: owners, error: ownersError } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .in('id', ownerIds);
+
+            if (!ownersError) {
+                data.forEach(space => {
+                    space.owner = (owners || []).find(owner => owner.id === space.user_id) || null;
+                });
+            }
+        }
+
         res.json(data);  // Return the data as JSON
     } catch (error) {
         console.error('Error getting the data:', error.message);

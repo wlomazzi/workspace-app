@@ -48,6 +48,13 @@ export function parseCookies(req) {
 //   req.userEmail        - the authenticated user's email
 //   req.supabaseAuthed   - a Supabase client scoped to that user's JWT, so RLS's auth.uid() checks
 //                          on inserts/updates/deletes actually resolve to this user
+//   req.accessToken      - the raw JWT itself. Not used by most routes (they should go through
+//                          req.supabaseAuthed instead) - the one legitimate use today is
+//                          GET /api/messages/realtime_token, which hands this to the browser so it
+//                          can authenticate its own direct Supabase Realtime websocket connection
+//                          (Realtime subscriptions have to come from the browser itself, so there's
+//                          no way around it briefly holding a copy of the token in JS memory for
+//                          that one purpose - see that route for the full reasoning).
 export async function requireAuth(req, res, next) {
     const cookies = parseCookies(req);
     const accessToken = cookies[ACCESS_TOKEN_COOKIE];
@@ -63,6 +70,7 @@ export async function requireAuth(req, res, next) {
 
     req.userId = data.user.id;
     req.userEmail = data.user.email;
+    req.accessToken = accessToken;
     req.supabaseAuthed = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
         global: { headers: { Authorization: `Bearer ${accessToken}` } },
         auth: { persistSession: false }
